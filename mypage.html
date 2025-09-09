@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>마이페이지 - NBTI 길드</title>
+  <meta name="color-scheme" content="dark light">
+  
+  <!-- 파비콘 -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./img/apple-touch-icon.png">
+  <link rel="manifest" href="./site.webmanifest">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nbti.kro.kr/mypage.html">
+  <meta property="og:title" content="마이페이지 - NBTI 길드">
+  <meta property="og:description" content="NBTI 길드원의 개인 프로필을 관리하고 설정을 변경하세요!">
+  <meta property="og:image" content="https://nbti.kro.kr/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="NBTI 길드">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://nbti.kro.kr/mypage.html">
+  <meta property="twitter:title" content="마이페이지 - NBTI 길드">
+  <meta property="twitter:description" content="NBTI 길드원의 개인 프로필을 관리하고 설정을 변경하세요!">
+  <meta property="twitter:image" content="https://nbti.kro.kr/img/og-image.png">
+  
+  <!-- 기타 메타 태그 -->
+  <meta name="description" content="NBTI 길드원의 개인 프로필을 관리하고 설정을 변경하세요!">
+  <meta name="keywords" content="마비노기, 모바일, 던컨서버, NBTI, 길드, 마이페이지, 프로필">
+  <meta name="author" content="NBTI 길드">
+  <!-- 캐시 무효화 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="stylesheet" href="./styles.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Cropper.js CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+  <script type="module" src="./js/firebase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/supabase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/firebase-data-manager.js?v=1.0.0"></script>
+  <script src="./js/header-component.js?v=1.0.0"></script>
+  <script src="./js/footer-component.js?v=1.0.0"></script>
+  <!-- Cropper.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script type="module">
+    // Firebase 함수들은 firebase-data-manager.js에서 관리됨
+  </script>
+</head>
+<body>
+  <!-- 헤더는 헤더 컴포넌트에서 자동 생성됩니다 -->
+
+  <!-- 히어로 섹션 -->
+  <section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <!-- <p class="hero-subtitle">마비노기 모바일 던컨 서버</p>
+      <h1 class="hero-title">마이페이지</h1> -->
+    </div>
+  </section>
+
+  <div class="wrap">
+    <!-- 로그인 섹션 -->
+    <div id="loginSection" class="login-section">
+      <div class="login-card">
+        <h2>길드원 로그인</h2>
+        <!-- Google 로그인 버튼 -->
+        <button type="button" class="btn btn-google" id="googleLoginBtn">
+          <i class="fab fa-google"></i>
+          Google로 로그인
+        </button>
+      </div>
+    </div>
+
+    <!-- 마이페이지 섹션 -->
+    <div id="mypageSection" class="mypage-section" style="display: none;">
+      <div class="page-header">
+        <div class="page-title-row">
+          <h1>👤 마이페이지</h1>
+        </div>
+      </div>
+
+      <div class="mypage-content">
+        <!-- 프로필 카드 -->
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="profile-cover" id="profileCover">
+              <div class="cover-upload-overlay">
+                <input type="file" id="coverFile" accept="image/*" style="display: none;">
+                <button type="button" class="cover-upload-icon" id="uploadCoverBtn" title="커버 이미지 업로드">
+                  <i class="fa-solid fa-camera"></i>
+                </button>
+              </div>
+            </div>
+            <div class="profile-info">
+              <h2 id="profileName"></h2>
+              <p id="profileRole"></p>
+              <p id="profileEmail"></p>
+              <div id="userStatus" class="user-status"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 편집 폼 -->
+        <div class="edit-form-card">
+          <h3>프로필 편집</h3>
+          <form id="profileForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editName">닉네임</label>
+                <input type="text" id="editName" required>
+              </div>
+              <div class="form-group">
+                <label for="editMbti">MBTI</label>
+                <input type="text" id="editMbti" placeholder="예: ENFP" required>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="editRole">직책</label>
+              <input type="text" id="editRole" placeholder="예: 길드원, 부길드장" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="editBio">한 줄 소개</label>
+              <input type="text" id="editBio" placeholder="간단한 자기소개를 입력하세요">
+            </div>
+
+            <div class="form-group">
+              <label for="editTags">태그</label>
+              <div class="tag-input-container">
+                <input type="text" id="editTags" placeholder="태그를 입력하고 Enter를 누르세요 (예: #길드원 #레이드)">
+                <div class="tag-list" id="tagList"></div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">저장</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 크롭 모달 -->
+  <div id="cropModal" class="crop-modal">
+    <div class="crop-modal-content">
+      <div class="crop-modal-header">
+        <h3>프로필 이미지 편집</h3>
+        <button class="crop-modal-close" id="cropModalClose">&times;</button>
+      </div>
+      <div class="crop-modal-body">
+        <div class="crop-container">
+          <img id="cropImage" src="" alt="크롭할 이미지">
+        </div>
+        <div class="crop-controls">
+          <button type="button" class="btn btn-secondary" id="cropCancel">취소</button>
+          <button type="button" class="btn btn-primary" id="cropConfirm">적용</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const headerComponent = new HeaderComponent();
+    
+    // 헤더 컴포넌트 초기화 확인
+    setTimeout(() => {
+      if (headerComponent && typeof headerComponent.updateLoginButton === 'function') {
+        headerComponent.updateLoginButton();
+      }
+    }, 1000);
+    
+    const loginSection = document.getElementById('loginSection');
+    const mypageSection = document.getElementById('mypageSection');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    const profileForm = document.getElementById('profileForm');
+    const uploadCoverBtn = document.getElementById('uploadCoverBtn');
+    const coverFile = document.getElementById('coverFile');
+    const cropModal = document.getElementById('cropModal');
+    const cropImage = document.getElementById('cropImage');
+    const cropModalClose = document.getElementById('cropModalClose');
+    const cropCancel = document.getElementById('cropCancel');
+    const cropConfirm = document.getElementById('cropConfirm');
+    
+    const profileName = document.getElementById('profileName');
+    const profileRole = document.getElementById('profileRole');
+    const profileEmail = document.getElementById('profileEmail');
+    const profileCover = document.getElementById('profileCover');
+    
+    const editName = document.getElementById('editName');
+    const editMbti = document.getElementById('editMbti');
+    const editRole = document.getElementById('editRole');
+    const editBio = document.getElementById('editBio');
+    const editTags = document.getElementById('editTags');
+    const tagList = document.getElementById('tagList');
+    
+    let currentUser = null;
+    let userProfile = null;
+    let selectedTags = [];
+    let cropper = null;
+    let currentFile = null;
+
+    function openCropModal(file) {
+      currentFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        cropImage.src = e.target.result;
+        cropModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // Cropper 초기화
+        setTimeout(() => {
+          if (cropper) {
+            cropper.destroy();
+          }
+          cropper = new Cropper(cropImage, {
+            aspectRatio: 1, // 정사각형 비율
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 0.8,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
+            background: false,
+            modal: true,
+            responsive: true,
+            checkCrossOrigin: false
+          });
+        }, 100);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function closeCropModal() {
+      cropModal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      currentFile = null;
+      coverFile.value = '';
+    }
+
+    function convertCroppedImageToWebP(quality = 0.8) {
+      return new Promise((resolve, reject) => {
+        if (!cropper) {
+          reject(new Error('크롭 도구가 초기화되지 않았습니다'));
+          return;
+        }
+        
+        try {
+          const canvas = cropper.getCroppedCanvas({
+            width: 400,
+            height: 400,
+            minWidth: 200,
+            minHeight: 200,
+            maxWidth: 800,
+            maxHeight: 800,
+            fillColor: '#fff',
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high'
+          });
+          
+          if (!canvas) {
+            reject(new Error('크롭된 캔버스를 생성할 수 없습니다'));
+            return;
+          }
+          
+          canvas.toBlob((blob) => {
+            if (blob && blob.size > 0) {
+              resolve(blob);
+            } else {
+              reject(new Error('WebP 변환에 실패했습니다: 빈 파일이 생성되었습니다'));
+            }
+          }, 'image/webp', quality);
+        } catch (error) {
+          reject(new Error('WebP 변환 실패: ' + error.message));
+        }
+      });
+    }
+
+    function convertToWebP(file, quality = 0.8) {
+      return new Promise((resolve, reject) => {
+        if (!file.type.startsWith('image/')) {
+          reject(new Error('WebP 변환 실패: 이미지 파일이 아닙니다'));
+          return;
+        }
+        
+        if (file.size > 10 * 1024 * 1024) {
+          reject(new Error('WebP 변환 실패: 파일 크기가 너무 큽니다 (10MB 제한)'));
+          return;
+        }
+        
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+          try {
+            if (img.width === 0 || img.height === 0) {
+              reject(new Error('WebP 변환 실패: 유효하지 않은 이미지 크기'));
+              return;
+            }
+            
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            canvas.toBlob((blob) => {
+              if (blob && blob.size > 0) {
+                resolve(blob);
+              } else {
+                reject(new Error('WebP 변환에 실패했습니다: 빈 파일이 생성되었습니다'));
+              }
+            }, 'image/webp', quality);
+          } catch (error) {
+            reject(new Error('WebP 변환 실패: ' + error.message));
+          }
+        };
+        
+        img.onerror = (error) => {
+          reject(new Error('WebP 변환 실패: 이미지를 로드할 수 없습니다'));
+        };
+        
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    function addTag(tagText) {
+      const tag = tagText.trim();
+      if (!tag || selectedTags.includes(tag)) return;
+      
+      const formattedTag = tag.startsWith('#') ? tag : `#${tag}`;
+      selectedTags.push(formattedTag);
+      displayTags();
+    }
+
+    function displayTags() {
+      tagList.innerHTML = '';
+      selectedTags.forEach((tag, index) => {
+        const tagElement = document.createElement('span');
+        tagElement.className = 'tag-item';
+        tagElement.innerHTML = `
+          ${tag}
+          <button type="button" class="remove-tag" data-index="${index}">
+            <i class="fa-solid fa-times" style="color: black;"></i>
+          </button>
+        `;
+        
+        tagElement.querySelector('.remove-tag').addEventListener('click', () => {
+          selectedTags.splice(index, 1);
+          displayTags();
+        });
+        
+        tagList.appendChild(tagElement);
+      });
+    }
+
+    googleLoginBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템이 아직 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      try {
+        const result = await firebaseDataManager.signInWithGoogle();
+        if (result.success) {
+          currentUser = result.user;
+          
+          await checkAndLoadUserProfile();
+          
+          showMypage();
+          
+          if (userProfile && userProfile.status === 'approved') {
+            alert(`✅ 승인된 사용자입니다. 모든 기능을 사용할 수 있습니다.`);
+          } else {
+            alert(`⏳ 관리자 확인 중입니다.\n\n전사도로롱에게 승인을 요청해주세요.`);
+          }
+          
+          // 로그인 후 페이지 새로고침
+          window.location.reload();
+        } else {
+          alert('Google 로그인에 실패했습니다: ' + result.error);
+        }
+      } catch (error) {
+        // console.error('Google 로그인 오류:', error);
+        alert('Google 로그인 중 오류가 발생했습니다.');
+      }
+    });
+
+    async function checkAndLoadUserProfile() {
+      if (!currentUser) return;
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        return;
+      }
+      
+      try {
+        const memberRef = firebaseDataManager.getDocRef('members', currentUser.uid);
+        const memberSnap = await firebaseDataManager.getDocument(memberRef);
+        
+        if (memberSnap.exists()) {
+          userProfile = { id: memberSnap.id, ...memberSnap.data() };
+        } else {
+          userProfile = {
+            id: currentUser.uid,
+            name: currentUser.displayName || currentUser.email.split('@')[0],
+            email: currentUser.email,
+            mbti: '',
+            role: '길드원',
+            bio: 'Google 로그인으로 가입한 새 멤버입니다.',
+            tags: ['#새멤버'],
+            cover: null,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+          
+          const result = await firebaseDataManager.saveUserProfile(currentUser.uid, userProfile);
+        }
+      } catch (error) {
+        // console.error('프로필 로드 오류:', error);
+        alert('프로필을 불러오는 중 오류가 발생했습니다.');
+      }
+    }
+
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!currentUser || !userProfile) return;
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템이 아직 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      try {
+        const updateData = {
+          name: editName.value,
+          mbti: editMbti.value,
+          role: editRole.value,
+          bio: editBio.value,
+          tags: selectedTags
+        };
+        
+        const result = await firebaseDataManager.saveUserProfile(currentUser.uid, updateData);
+        
+        if (result.success) {
+          userProfile = { ...userProfile, ...updateData };
+          
+          updateProfileDisplay();
+          
+          if (result.status === 'approved') {
+            alert('프로필이 저장되었습니다!\n\n✅ 승인된 사용자입니다. 변경사항이 즉시 반영됩니다.');
+          } else {
+            alert('프로필이 저장되었습니다!\n\n⏳ 관리자 확인 중입니다...\n\n승인 후 길드원 목록에 표시됩니다.');
+          }
+        } else {
+          alert('프로필 저장에 실패했습니다: ' + result.error);
+        }
+      } catch (error) {
+        // console.error('프로필 업데이트 오류:', error);
+        alert('프로필 업데이트 중 오류가 발생했습니다.');
+      }
+    });
+
+
+    uploadCoverBtn.addEventListener('click', () => {
+      coverFile.click();
+    });
+
+    coverFile.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file || !currentUser) return;
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템이 아직 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      // 파일 크기 체크
+      if (file.size > 10 * 1024 * 1024) {
+        alert('파일 크기가 너무 큽니다. 10MB 이하의 이미지를 선택해주세요.');
+        coverFile.value = '';
+        return;
+      }
+      
+      // 이미지 파일 체크
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드할 수 있습니다.');
+        coverFile.value = '';
+        return;
+      }
+      
+      // 크롭 모달 열기
+      openCropModal(file);
+    });
+
+    function showLogin() {
+      loginSection.style.display = 'block';
+      mypageSection.style.display = 'none';
+    }
+
+    function showMypage() {
+      loginSection.style.display = 'none';
+      mypageSection.style.display = 'block';
+      loadProfileToForm();
+      updateProfileDisplay();
+    }
+
+    function loadProfileToForm() {
+      if (!userProfile) return;
+      
+      editName.value = userProfile.name || '';
+      editMbti.value = userProfile.mbti || '';
+      editRole.value = userProfile.role || '';
+      editBio.value = userProfile.bio || '';
+      
+      selectedTags = userProfile.tags || [];
+      displayTags();
+    }
+
+    function updateProfileDisplay() {
+      if (!userProfile) return;
+      
+      profileName.textContent = userProfile.name || '';
+      profileRole.textContent = `${userProfile.mbti || ''} | ${userProfile.role || ''}`;
+      profileEmail.textContent = userProfile.email || '';
+      
+      const userStatus = document.getElementById('userStatus');
+      if (userStatus) {
+        const status = userProfile.status || 'pending';
+        let statusText = '';
+        let statusClass = '';
+        
+        switch (status) {
+          case 'approved':
+            statusText = '✅ 승인됨';
+            statusClass = 'status-approved';
+            break;
+          case 'pending':
+            statusText = '⏳ 관리자 확인 중...';
+            statusClass = 'status-pending';
+            break;
+          case 'rejected':
+            statusText = '❌ 승인 거부됨';
+            statusClass = 'status-rejected';
+            break;
+          default:
+            statusText = '⏳ 관리자 확인 중...';
+            statusClass = 'status-pending';
+        }
+        
+        userStatus.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
+      }
+      
+      const coverStyle = userProfile.cover ? 
+        `background-image: url('${userProfile.cover}')` : 
+        `background-image: url('img/cover.webp')`;
+      profileCover.style.cssText = coverStyle;
+    }
+
+    async function initializePage() {
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템 초기화 중 오류가 발생했습니다. 페이지를 새로고침해주세요.');
+        return;
+      }
+      
+      const currentUserCheck = firebaseDataManager.getCurrentUser();
+      if (currentUserCheck) {
+        currentUser = currentUserCheck;
+        await checkAndLoadUserProfile();
+        showMypage();
+      } else {
+        currentUser = null;
+        userProfile = null;
+        showLogin();
+      }
+      
+      firebaseDataManager.onAuthStateChanged(async (user) => {
+        if (user) {
+          currentUser = user;
+          await checkAndLoadUserProfile();
+          showMypage();
+        } else {
+          currentUser = null;
+          userProfile = null;
+          showLogin();
+        }
+      });
+    }
+
+    editTags.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTag(editTags.value);
+        editTags.value = '';
+      }
+    });
+
+    // 크롭 모달 이벤트 리스너
+    cropModalClose.addEventListener('click', closeCropModal);
+    cropCancel.addEventListener('click', closeCropModal);
+    
+    cropConfirm.addEventListener('click', async () => {
+      if (!cropper || !currentUser) return;
+      
+      uploadCoverBtn.disabled = true;
+      cropConfirm.disabled = true;
+      cropConfirm.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+      
+      try {
+        // 기존 이미지 삭제
+        if (userProfile && userProfile.cover) {
+          await firebaseDataManager.deleteImage(userProfile.cover);
+        }
+        
+        // 크롭된 이미지를 WebP로 변환
+        const webpBlob = await convertCroppedImageToWebP();
+        
+        // Supabase Storage에 업로드
+        const uploadResult = await firebaseDataManager.uploadImage(webpBlob, 'img/profile');
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error);
+        }
+        const downloadURL = uploadResult.url;
+        
+        // 프로필에 저장
+        const result = await firebaseDataManager.saveUserProfile(currentUser.uid, { 
+          cover: downloadURL
+        });
+        
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+        
+        userProfile.cover = downloadURL;
+        updateProfileDisplay();
+        
+        closeCropModal();
+        
+        if (result.status === 'approved') {
+          alert('프로필 이미지가 업로드되었습니다!\n\n✅ 크롭 및 WebP 최적화 완료\n\n🗑️ 기존 이미지는 자동으로 삭제되었습니다\n\n승인된 사용자이므로 변경사항이 즉시 반영됩니다.');
+        } else {
+          alert('프로필 이미지가 업로드되었습니다!\n\n✅ 크롭 및 WebP 최적화 완료\n\n🗑️ 기존 이미지는 자동으로 삭제되었습니다\n\n⏳ 관리자 확인 후 길드원 목록에 표시됩니다.');
+        }
+        
+      } catch (error) {
+        // console.error('프로필 이미지 업로드 오류:', error);
+        alert('프로필 이미지 업로드 중 오류가 발생했습니다.\n\n❌ ' + error.message);
+      } finally {
+        uploadCoverBtn.disabled = false;
+        cropConfirm.disabled = false;
+        cropConfirm.innerHTML = '적용';
+      }
+    });
+    
+    // 모달 배경 클릭으로 닫기
+    cropModal.addEventListener('click', (e) => {
+      if (e.target === cropModal) {
+        closeCropModal();
+      }
+    });
+    
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && cropModal.style.display === 'flex') {
+        closeCropModal();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 보안 시스템 초기화 (로그 한도 초과로 주석처리)
+      // if (typeof firebaseDataManager !== 'undefined') {
+      //   try {
+      //     await firebaseDataManager.initSecurity();
+      //   } catch (error) {
+      //     // 보안 초기화 실패 시에도 페이지는 정상 작동
+      //   }
+      // }
+      
+      initializePage();
+    });
+  </script>
+</body>
+</html>

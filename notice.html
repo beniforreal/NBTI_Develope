@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>공지사항 - NBTI 길드</title>
+  <meta name="color-scheme" content="dark light">
+  
+  <!-- 파비콘 -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./img/apple-touch-icon.png">
+  <link rel="manifest" href="./site.webmanifest">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nbti.kro.kr/notice.html">
+  <meta property="og:title" content="공지사항 - NBTI 길드">
+  <meta property="og:description" content="NBTI 길드의 최신 공지사항과 소식을 확인하세요!">
+  <meta property="og:image" content="https://nbti.kro.kr/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="NBTI 길드">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://nbti.kro.kr/notice.html">
+  <meta property="twitter:title" content="공지사항 - NBTI 길드">
+  <meta property="twitter:description" content="NBTI 길드의 최신 공지사항과 소식을 확인하세요!">
+  <meta property="twitter:image" content="https://nbti.kro.kr/img/og-image.png">
+  
+  <!-- 기타 메타 태그 -->
+  <meta name="description" content="NBTI 길드의 최신 공지사항과 소식을 확인하세요!">
+  <meta name="keywords" content="마비노기, 모바일, 던컨서버, NBTI, 길드, 공지사항, 소식">
+  <meta name="author" content="NBTI 길드">
+  <!-- 캐시 무효화 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="stylesheet" href="./styles.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script type="module" src="./js/firebase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/supabase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/firebase-data-manager.js?v=1.0.0"></script>
+  <script src="./js/header-component.js?v=1.0.0"></script>
+  <script src="./js/footer-component.js?v=1.0.0"></script>
+</head>
+<body>
+  <!-- 헤더는 헤더 컴포넌트에서 자동 생성됩니다 -->
+
+  <!-- 히어로 섹션 -->
+  <section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <!-- <p class="hero-subtitle">마비노기 모바일 던컨 서버</p>
+      <h1 class="hero-title">공지사항</h1> -->
+    </div>
+  </section>
+
+  <div class="wrap notice-page">
+    <div class="page-header">
+      <div class="page-title-row">
+        <h1>
+          <i class="fa-solid fa-bullhorn" style="color: #ff6b9d;"></i>
+          공지사항
+        </h1>
+        <button class="btn btn-primary" id="createNoticeBtn" style="display: none;">
+          <i class="fa-solid fa-plus"></i>
+          글쓰기
+        </button>
+      </div>
+    </div>
+
+    <div class="notice-container">
+      <div class="notice-list" id="noticeList">
+        <!-- 공지사항 목록이 여기에 동적으로 추가됩니다 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 로그인 모달 -->
+  <div id="loginModal" class="login-modal">
+    <div class="login-modal-content">
+      <div class="login-modal-header">
+        <h2>길드원 로그인</h2>
+        <button class="login-modal-close" id="loginModalClose">&times;</button>
+      </div>
+      <div class="login-modal-body">
+        <!-- Google 로그인 버튼 -->
+        <button type="button" class="btn btn-google" id="googleLoginBtn">
+          <i class="fab fa-google"></i>
+          Google로 로그인
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const headerComponent = new HeaderComponent();
+    
+    // 헤더 컴포넌트 초기화 확인
+    setTimeout(() => {
+      if (headerComponent && typeof headerComponent.updateLoginButton === 'function') {
+        headerComponent.updateLoginButton();
+      }
+    }, 1000);
+    
+    const noticeList = document.getElementById('noticeList');
+    const createNoticeBtn = document.getElementById('createNoticeBtn');
+    const loginModal = document.getElementById('loginModal');
+    const loginModalClose = document.getElementById('loginModalClose');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    
+    let currentUser = null;
+    let isAdmin = false;
+
+    const utils = {
+      formatDate: (timestamp) => {
+        if (!timestamp) return '';
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return date.toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      },
+      escapeHtml: (text) => {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    };
+
+    async function loadNotices() {
+      try {
+        if (typeof firebaseDataManager === 'undefined') {
+          return [];
+        }
+        return await firebaseDataManager.loadNotices();
+      } catch (e) {
+        // console.error('공지사항 로드 실패:', e);
+        return [];
+      }
+    }
+
+    async function renderNotices() {
+      const notices = await loadNotices();
+      
+      noticeList.innerHTML = '';
+      
+      if (notices.length === 0) {
+        noticeList.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 40px;">등록된 공지사항이 없습니다.</p>';
+        return;
+      }
+
+      // 권한 확인 후 렌더링 (create-notice.html 구조와 동일)
+      await checkUserPermissions();
+      updateCreateButtonVisibility();
+
+      for (const notice of notices) {
+        const noticeCard = await createNoticeCard(notice);
+        noticeList.appendChild(noticeCard);
+      }
+    }
+
+    async function createNoticeCard(notice) {
+      const card = document.createElement('div');
+      card.className = 'notice-card';
+      
+      const isImportant = notice.isImportant || false;
+      // 관리자이거나 작성자 본인인 경우 수정/삭제 가능
+      const canEdit = isAdmin || (currentUser && notice.createdBy === currentUser.uid);
+      const canDelete = isAdmin || (currentUser && notice.createdBy === currentUser.uid);
+      
+      
+      // 작성자 이름을 DB에서 가져오기
+      let authorName = notice.author; // 기본값
+      try {
+        if (notice.createdBy) {
+          const memberRef = firebaseDataManager.getDocRef('members', notice.createdBy);
+          const memberSnap = await firebaseDataManager.getDocument(memberRef);
+          if (memberSnap.exists()) {
+            const memberData = memberSnap.data();
+            authorName = memberData.name || authorName;
+          }
+        }
+      } catch (error) {
+        // console.error('작성자 정보 로드 실패:', error);
+      }
+      
+      card.innerHTML = `
+        <div class="notice-header">
+          <div class="notice-title-row">
+            <h3 class="notice-title ${isImportant ? 'important' : ''}">
+              ${isImportant ? '<i class="fa-solid fa-exclamation-triangle" style="color: #ff6b9d;"></i>' : ''}
+              ${utils.escapeHtml(notice.title)}
+            </h3>
+            ${canEdit || canDelete ? `
+              <div class="notice-actions">
+                ${canEdit ? `
+                  <button class="notice-edit-btn" data-id="${notice.id}" title="공지사항 수정">
+                    <i class="fa-solid fa-edit"></i>
+                  </button>
+                ` : ''}
+                ${canDelete ? `
+                  <button class="notice-delete-btn" data-id="${notice.id}" title="공지사항 삭제">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                ` : ''}
+              </div>
+            ` : ''}
+          </div>
+          <div class="notice-meta">
+            <span class="notice-author">${utils.escapeHtml(authorName)}</span>
+            <span class="notice-date">${utils.formatDate(notice.createdAt)}</span>
+          </div>
+        </div>
+        <div class="notice-content">
+          <div class="notice-html-content">${notice.content}</div>
+        </div>
+      `;
+      
+      // 수정 버튼 이벤트
+      const editBtn = card.querySelector('.notice-edit-btn');
+      if (editBtn) {
+        editBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          
+          // 권한 재확인
+          if (!currentUser) {
+            alert('로그인이 필요합니다.');
+            return;
+          }
+          
+          if (!isAdmin && notice.createdBy !== currentUser.uid) {
+            alert('수정 권한이 없습니다.\n\n관리자이거나 작성자 본인만 수정할 수 있습니다.');
+            return;
+          }
+          
+          const noticeId = editBtn.getAttribute('data-id');
+          window.location.href = `create-notice.html?edit=${noticeId}`;
+        });
+      }
+      
+      // 삭제 버튼 이벤트
+      const deleteBtn = card.querySelector('.notice-delete-btn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          
+          // 권한 재확인
+          if (!currentUser) {
+            alert('로그인이 필요합니다.');
+            return;
+          }
+          
+          if (!isAdmin && notice.createdBy !== currentUser.uid) {
+            alert('삭제 권한이 없습니다.\n\n관리자이거나 작성자 본인만 삭제할 수 있습니다.');
+            return;
+          }
+          
+          const noticeId = deleteBtn.getAttribute('data-id');
+          const noticeTitle = notice.title;
+          
+          if (confirm(`정말로 이 공지사항을 삭제하시겠습니까?\n\n제목: "${noticeTitle}"\n\n이 작업은 되돌릴 수 없습니다.`)) {
+            try {
+              // 삭제 버튼 비활성화
+              deleteBtn.disabled = true;
+              deleteBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+              
+              const success = await firebaseDataManager.deleteNotice(noticeId);
+              if (success) {
+                await renderNotices();
+                alert('공지사항이 성공적으로 삭제되었습니다.');
+              } else {
+                alert('삭제에 실패했습니다. 다시 시도해주세요.');
+                // 버튼 복원
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+              }
+            } catch (error) {
+              // console.error('삭제 오류:', error);
+              alert('삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
+              // 버튼 복원
+              deleteBtn.disabled = false;
+              deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+            }
+          }
+        });
+      }
+      
+      return card;
+    }
+
+    async function checkUserPermissions() {
+      if (!currentUser) {
+        isAdmin = false;
+        return;
+      }
+      
+      try {
+        // firebase-data-manager의 isAdmin 함수 사용
+        isAdmin = await firebaseDataManager.isAdmin(currentUser.uid);
+      } catch (error) {
+        isAdmin = false;
+      }
+    }
+
+    function updateCreateButtonVisibility() {
+      if (isAdmin) {
+        createNoticeBtn.style.display = 'inline-flex';
+      } else {
+        createNoticeBtn.style.display = 'none';
+      }
+    }
+
+    function openLoginModal() {
+      loginModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLoginModal() {
+      loginModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    googleLoginBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템이 아직 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      try {
+        const result = await firebaseDataManager.signInWithGoogle();
+        if (result.success) {
+          currentUser = result.user;
+          await checkUserPermissions();
+          updateCreateButtonVisibility();
+          closeLoginModal();
+          
+          // 로그인 후 페이지 새로고침
+          window.location.reload();
+        } else {
+          alert('Google 로그인에 실패했습니다: ' + result.error);
+        }
+      } catch (error) {
+        // console.error('Google 로그인 오류:', error);
+        alert('Google 로그인 중 오류가 발생했습니다.');
+      }
+    });
+
+    loginModalClose.addEventListener('click', closeLoginModal);
+    loginModal.addEventListener('click', (e) => {
+      if (e.target === loginModal) {
+        closeLoginModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && loginModal.style.display === 'flex') {
+        closeLoginModal();
+      }
+    });
+
+    createNoticeBtn.addEventListener('click', () => {
+      if (!currentUser) {
+        openLoginModal();
+        return;
+      }
+      
+      if (!isAdmin) {
+        alert('관리자만 공지사항을 작성할 수 있습니다.');
+        return;
+      }
+      
+      window.location.href = 'create-notice.html';
+    });
+
+    async function checkAuthState() {
+      if (typeof firebaseDataManager === 'undefined') {
+        return;
+      }
+      
+      const currentUserCheck = firebaseDataManager.getCurrentUser();
+      if (currentUserCheck) {
+        currentUser = currentUserCheck;
+        await checkUserPermissions();
+        updateCreateButtonVisibility();
+      } else {
+        currentUser = null;
+        isAdmin = false;
+        updateCreateButtonVisibility();
+      }
+      
+      firebaseDataManager.onAuthStateChanged(async (user) => {
+        if (user) {
+          currentUser = user;
+          await checkUserPermissions();
+          updateCreateButtonVisibility();
+        } else {
+          currentUser = null;
+          isAdmin = false;
+          updateCreateButtonVisibility();
+        }
+      });
+    }
+
+    async function initializePage() {
+      try {
+        if (typeof firebaseDataManager === 'undefined') {
+          setTimeout(initializePage, 1000);
+          return;
+        }
+        
+        // create-notice.html과 동일한 구조: 권한 확인 후 렌더링
+        await checkAuthState();
+        await renderNotices();
+      } catch (error) {
+        // 페이지 초기화 중 오류
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 보안 시스템 초기화 (로그 한도 초과로 주석처리)
+      // if (typeof firebaseDataManager !== 'undefined') {
+      //   try {
+      //     await firebaseDataManager.initSecurity();
+      //   } catch (error) {
+      //     // 보안 초기화 실패 시에도 페이지는 정상 작동
+      //   }
+      // }
+      
+      setTimeout(initializePage, 500);
+    });
+  </script>
+</body>
+</html>

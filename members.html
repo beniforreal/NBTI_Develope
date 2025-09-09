@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>길드원 - NBTI 길드</title>
+  <meta name="color-scheme" content="dark light">
+  
+  <!-- 파비콘 -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./img/apple-touch-icon.png">
+  <link rel="manifest" href="./site.webmanifest">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nbti.kro.kr/members.html">
+  <meta property="og:title" content="길드원 - NBTI 길드">
+  <meta property="og:description" content="NBTI 길드의 멋진 길드원들을 만나보세요! 함께 모험을 떠나요!">
+  <meta property="og:image" content="https://nbti.kro.kr/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="NBTI 길드">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://nbti.kro.kr/members.html">
+  <meta property="twitter:title" content="길드원 - NBTI 길드">
+  <meta property="twitter:description" content="NBTI 길드의 멋진 길드원들을 만나보세요! 함께 모험을 떠나요!">
+  <meta property="twitter:image" content="https://nbti.kro.kr/img/og-image.png">
+  
+  <!-- 기타 메타 태그 -->
+  <meta name="description" content="NBTI 길드의 멋진 길드원들을 만나보세요! 함께 모험을 떠나요!">
+  <meta name="keywords" content="마비노기, 모바일, 던컨서버, NBTI, 길드, 길드원, 커뮤니티">
+  <meta name="author" content="NBTI 길드">
+  <!-- 캐시 무효화 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="stylesheet" href="./styles.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script type="module" src="./js/firebase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/supabase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/firebase-data-manager.js?v=1.0.0"></script>
+  <script src="./js/header-component.js?v=1.0.0"></script>
+  <script src="./js/footer-component.js?v=1.0.0"></script>
+</head>
+<body>
+  <!-- 헤더는 헤더 컴포넌트에서 자동 생성됩니다 -->
+
+  <!-- 히어로 섹션 -->
+  <section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <!-- <p class="hero-subtitle">마비노기 모바일 던컨 서버</p>
+      <h1 class="hero-title">NBTI 길드</h1> -->
+    </div>
+  </section>
+
+    <!-- 공지사항 섹션 -->
+    <div class="notice-snippet" id="noticeSnippet">
+      <div class="notice-snippet-header">
+        <h2 class="notice-snippet-title">
+          <i class="fa-solid fa-bullhorn"></i>
+          공지사항
+        </h2>
+        <a href="notice.html" class="notice-snippet-more">더보기</a>
+      </div>
+      <div class="notice-snippet-list" id="noticeSnippetList">
+        <!-- 공지사항 목록이 여기에 동적으로 추가됩니다 -->
+      </div>
+    </div>
+
+  <div class="members-container">
+    <div class="page-header">
+      <div class="page-title-row">
+        <h1>NBTigram</h1>
+      </div>
+      <nav class="toolbar">
+        <button class="btn" id="addMember" style="display:none">길드원 추가</button>
+      </nav>
+    </div>
+
+    <section id="grid" class="members-grid"></section>
+  </div>
+
+
+  <template id="cardTmpl">
+    <article class="card">
+      <div class="cover">
+        <span class="cover-placeholder" style="opacity:.5">커버 없음</span>
+        <div class="cover-upload-icon" style="display:none">
+          <input type="file" class="cover-file-input" accept="image/*" style="display:none">
+          <button class="cover-upload-btn" title="커버 이미지 업로드">📷</button>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="member-name-mbti">
+          <div class="member-name-mbti-left">
+            <h3 class="title"></h3>
+            <span class="mbti"></span>
+          </div>
+          <p class="role"></p>
+        </div>
+
+        <div class="member-tags"></div>
+        <p class="bio"></p>
+        <div class="row" style="gap:6px;margin-top:10px;flex-wrap:wrap">
+          <a class="pill link" target="_blank" style="display:none">원본</a>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <!-- 로그인 모달 -->
+  <div id="loginModal" class="login-modal">
+    <div class="login-modal-content">
+      <div class="login-modal-header">
+        <h2>길드원 로그인</h2>
+        <button class="login-modal-close" id="loginModalClose">&times;</button>
+      </div>
+      <div class="login-modal-body">
+        <!-- Google 로그인 버튼 -->
+        <button type="button" class="btn btn-google" id="googleLoginBtn">
+          <i class="fab fa-google"></i>
+          Google로 로그인
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const cardTmpl = document.getElementById('cardTmpl');
+    const addMember = document.getElementById('addMember');
+
+    async function loadMembers(){
+      try{
+        if (typeof firebaseDataManager === 'undefined') {
+          return [];
+        }
+        return await firebaseDataManager.loadMembers();
+      }catch(e){ 
+        // console.error('길드원 로드 실패:', e);
+        return []; 
+      }
+    }
+    
+    const utils = {
+      formatDate: (timestamp) => {
+        if (!timestamp) return '';
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return date.toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+      },
+      escapeHtml: (text) => {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    };
+    
+    function fmtDate(ts){ 
+      return utils.formatDate(ts); 
+    }
+    
+    function escapeHtml(s){ 
+      return utils.escapeHtml(s); 
+    }
+
+    async function loadNoticePreview() {
+      const noticeSnippetList = document.getElementById('noticeSnippetList');
+      
+      try {
+        const notices = await firebaseDataManager.loadNotices();
+        const recentNotices = notices.slice(0, 3);
+        
+        if (recentNotices.length === 0) {
+          noticeSnippetList.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 20px;">등록된 공지사항이 없습니다.</p>';
+        } else {
+          for (const notice of recentNotices) {
+            const noticeItem = await createNoticeSnippetItem(notice);
+            noticeSnippetList.appendChild(noticeItem);
+          }
+        }
+      } catch (e) {
+        // console.error('공지사항 데이터 로드 실패:', e);
+        noticeSnippetList.innerHTML = '<p style="text-align: center; color: var(--danger); padding: 20px;">공지사항을 불러오는 중 오류가 발생했습니다.</p>';
+      }
+    }
+
+    async function createNoticeSnippetItem(notice) {
+      const item = document.createElement('div');
+      item.className = 'notice-snippet-item';
+      
+      function formatDate(timestamp) {
+        if (!timestamp) return '';
+        try {
+          const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+          return date.toLocaleDateString('ko-KR', {
+            month: '2-digit',
+            day: '2-digit'
+          });
+        } catch (e) {
+          return '';
+        }
+      }
+      
+      const isImportant = notice.isImportant || false;
+      
+      // 작성자 이름을 DB에서 가져오기
+      let authorName = notice.author; // 기본값
+      try {
+        if (notice.createdBy) {
+          const memberRef = firebaseDataManager.getDocRef('members', notice.createdBy);
+          const memberSnap = await firebaseDataManager.getDocument(memberRef);
+          if (memberSnap.exists()) {
+            const memberData = memberSnap.data();
+            authorName = memberData.name || authorName;
+          }
+        }
+      } catch (error) {
+        // console.error('작성자 정보 로드 실패:', error);
+      }
+      
+      item.innerHTML = `
+        <h4 class="notice-snippet-item-title ${isImportant ? 'important' : ''}">
+          ${isImportant ? '<i class="fa-solid fa-exclamation-triangle"></i>' : ''}
+          ${utils.escapeHtml(notice.title)}
+        </h4>
+        <div class="notice-snippet-item-meta">
+          <span>${utils.escapeHtml(authorName)}</span>
+          <span>${formatDate(notice.createdAt)}</span>
+        </div>
+      `;
+      
+      item.addEventListener('click', () => {
+        window.location.href = 'notice.html';
+      });
+      
+      return item;
+    }
+
+    async function render(){
+      const members = await loadMembers();
+
+      grid.innerHTML = "";
+      for(const m of members){
+        const node = cardTmpl.content.cloneNode(true);
+        const card = node.querySelector('.card');
+        const cover = node.querySelector('.cover');
+        const coverPlaceholder = node.querySelector('.cover-placeholder');
+        const ttl = node.querySelector('.title');
+        const mbti = node.querySelector('.mbti');
+        const role = node.querySelector('.role');
+        const memberTags = node.querySelector('.member-tags');
+        const bio = node.querySelector('.bio');
+        const link = node.querySelector('.link');
+        const coverUploadIcon = node.querySelector('.cover-upload-icon');
+        const coverFileInput = node.querySelector('.cover-file-input');
+        const coverUploadBtn = node.querySelector('.cover-upload-btn');
+
+        ttl.textContent = m.name;
+        mbti.textContent = m.mbti || "MBTI 미설정";
+        role.textContent = m.role || "길드원";
+        bio.textContent = m.bio || "";
+        
+        if (m.tags && m.tags.length > 0) {
+          memberTags.innerHTML = m.tags.map(tag => `<span class="member-tag">${utils.escapeHtml(tag)}</span>`).join('');
+        } else {
+          memberTags.innerHTML = '';
+        }
+        
+        const coverStyle = m.cover ? 
+          `background-image: url('${m.cover}')` : 
+          `background-image: url('img/cover.webp')`;
+        cover.style.cssText = coverStyle;
+        
+        if (m.cover) {
+          coverPlaceholder.style.display = 'none';
+        } else {
+          coverPlaceholder.style.display = 'block';
+        }
+        
+        coverUploadIcon.style.display = 'none';
+
+        coverUploadBtn.onclick = () => {
+          coverFileInput.click();
+        };
+
+
+        grid.appendChild(node);
+      }
+    }
+
+    addMember.style.display = 'none';
+
+    const headerComponent = new HeaderComponent();
+    
+    // 헤더 컴포넌트 초기화 확인
+    setTimeout(() => {
+      if (headerComponent && typeof headerComponent.updateLoginButton === 'function') {
+        headerComponent.updateLoginButton();
+      }
+    }, 1000);
+    
+    let currentUser = null;
+    const loginModal = document.getElementById('loginModal');
+    const loginModalClose = document.getElementById('loginModalClose');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+
+    function openLoginModal() {
+      loginModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLoginModal() {
+      loginModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    googleLoginBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      try {
+        const result = await firebaseDataManager.signInWithGoogle();
+        if (result.success) {
+          currentUser = result.user;
+          closeLoginModal();
+          
+          // 로그인 후 페이지 새로고침
+          window.location.reload();
+        } else {
+          alert('Google 로그인에 실패했습니다: ' + result.error);
+        }
+      } catch (error) {
+        // console.error('Google 로그인 오류:', error);
+        alert('Google 로그인 중 오류가 발생했습니다.');
+      }
+    });
+
+    loginModalClose.addEventListener('click', closeLoginModal);
+    loginModal.addEventListener('click', (e) => {
+      if (e.target === loginModal) {
+        closeLoginModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && loginModal.style.display === 'flex') {
+        closeLoginModal();
+      }
+    });
+
+    function checkAuthState() {
+      if (typeof firebaseDataManager === 'undefined') {
+        return;
+      }
+      
+      const currentUserCheck = firebaseDataManager.getCurrentUser();
+      if (currentUserCheck) {
+        currentUser = currentUserCheck;
+      } else {
+        currentUser = null;
+      }
+      
+      firebaseDataManager.onAuthStateChanged(async (user) => {
+        if (user) {
+          currentUser = user;
+        } else {
+          currentUser = null;
+        }
+      });
+    }
+
+    async function initializePage() {
+      try {
+        if (typeof firebaseDataManager === 'undefined') {
+          setTimeout(initializePage, 1000);
+          return;
+        }
+        
+        await Promise.all([
+          render(),
+          loadNoticePreview()
+        ]);
+        checkAuthState();
+      } catch (error) {
+        // console.error('페이지 초기화 중 오류:', error);
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 보안 시스템 초기화 (로그 한도 초과로 주석처리)
+      // if (typeof firebaseDataManager !== 'undefined') {
+      //   try {
+      //     await firebaseDataManager.initSecurity();
+      //   } catch (error) {
+      //     // 보안 초기화 실패 시에도 페이지는 정상 작동
+      //   }
+      // }
+      
+      setTimeout(initializePage, 500);
+    });
+  </script>
+</body>
+</html>

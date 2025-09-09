@@ -1,0 +1,1381 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>사진첩 - NBTI 길드</title>
+  <meta name="color-scheme" content="dark light">
+  
+  <!-- 파비콘 -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./img/apple-touch-icon.png">
+  <link rel="manifest" href="./site.webmanifest">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nbti.kro.kr/picture.html">
+  <meta property="og:title" content="사진첩 - NBTI 길드">
+  <meta property="og:description" content="NBTI 길드원들의 소중한 추억과 모험 사진들을 만나보세요!">
+  <meta property="og:image" content="https://nbti.kro.kr/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="NBTI 길드">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://nbti.kro.kr/picture.html">
+  <meta property="twitter:title" content="사진첩 - NBTI 길드">
+  <meta property="twitter:description" content="NBTI 길드원들의 소중한 추억과 모험 사진들을 만나보세요!">
+  <meta property="twitter:image" content="https://nbti.kro.kr/img/og-image.png">
+  
+  <!-- 기타 메타 태그 -->
+  <meta name="description" content="NBTI 길드원들의 소중한 추억과 모험 사진들을 만나보세요!">
+  <meta name="keywords" content="마비노기, 모바일, 던컨서버, NBTI, 길드, 사진첩, 추억">
+  <meta name="author" content="NBTI 길드">
+  <!-- 캐시 무효화 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="stylesheet" href="./styles.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script type="module" src="./js/firebase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/supabase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/firebase-data-manager.js?v=1.0.0"></script>
+  <script src="./js/header-component.js?v=1.0.0"></script>
+  <script src="./js/footer-component.js?v=1.0.0"></script>
+</head>
+<body>
+  <!-- 헤더는 헤더 컴포넌트에서 자동 생성됩니다 -->
+
+  <!-- 히어로 섹션 -->
+  <section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <!-- <p class="hero-subtitle">마비노기 모바일 던컨 서버</p>
+      <h1 class="hero-title">NBTI 길드</h1> -->
+    </div>
+  </section>
+
+    <!-- 공지사항 섹션 -->
+    <div class="notice-snippet" id="noticeSnippet">
+      <div class="notice-snippet-header">
+        <h2 class="notice-snippet-title">
+          <i class="fa-solid fa-bullhorn"></i>
+          공지사항
+        </h2>
+        <a href="notice.html" class="notice-snippet-more">더보기</a>
+      </div>
+      <div class="notice-snippet-list" id="noticeSnippetList">
+        <!-- 공지사항 목록이 여기에 동적으로 추가됩니다 -->
+      </div>
+    </div>
+
+  <div class="members-container">
+    <div class="page-header">
+      <div class="page-title-row">
+        <h1>
+          <img src="./img/camera.png" alt="카메라" class="page-icon">
+          사진첩
+        </h1>
+        <div class="page-actions">
+          <button class="create-post-btn" id="createPostBtn" title="새 포스팅">
+            <i class="fa-solid fa-plus"></i>
+            <span>사진 업로드하기</span>
+          </button>
+          <div class="search">
+            <input id="q" placeholder="태그 입력">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section id="grid" class="grid"></section>
+    <div id="empty" class="empty" hidden>아직 업로드된 사진이 없습니다. 우측 상단 <b>사진 업로드</b> 버튼을 눌러 추가하세요.</div>
+  </div>
+
+
+  <!-- 포스팅 다이얼로그 -->
+  <dialog id="dlg" class="posting-dialog">
+    <div class="posting-header">
+      <h3>새 포스팅</h3>
+      <button type="button" class="close-btn" id="cancelBtn">&times;</button>
+        </div>
+    <form method="dialog" id="form" class="posting-form">
+      <div class="posting-content">
+        <!-- 이미지 업로드 영역 -->
+        <div class="image-upload-section">
+          <div class="image-upload-area" id="imageUploadArea">
+            <div class="upload-placeholder">
+              <i class="fa-solid fa-images"></i>
+              <p>사진을 선택하거나 여기에 드래그하세요</p>
+              <span>최대 10장까지 업로드 가능</span>
+        </div>
+            <input type="file" id="file" accept="image/*" multiple style="display: none;">
+        </div>
+          <div class="image-preview-container" id="imagePreviewContainer"></div>
+      </div>
+        
+        <!-- 텍스트 작성 영역 -->
+        <div class="text-input-section">
+          <div class="author-info">
+            <div class="author-avatar">
+              <span id="authorInitial">U</span>
+            </div>
+            <span class="author-name" id="authorName">사용자</span>
+          </div>
+          <textarea id="caption" placeholder="무슨 일이 일어나고 있나요?" rows="4"></textarea>
+          <div class="character-count">
+            <span id="charCount">0</span>/2200
+          </div>
+        </div>
+        
+        <!-- 추가 옵션 -->
+        <div class="posting-options">
+          <div class="option-row">
+            <label for="location">위치</label>
+            <input type="text" id="location" placeholder="위치 추가 (선택사항)">
+          </div>
+          <div class="option-row">
+            <label for="tags">태그</label>
+            <input type="text" id="tags" placeholder="태그를 입력하세요 (예: #길드 #모임)">
+          </div>
+        </div>
+      </div>
+      
+      <div class="posting-footer">
+        <button class="btn btn-secondary" type="button" id="cancelBtn2">취소</button>
+        <button class="btn btn-primary" id="submitBtn" type="submit">
+          <i class="fa-solid fa-paper-plane"></i>
+          공유하기
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 세로 긴 상세 모달 -->
+  <div id="detailModal" class="detail-modal">
+    <div class="detail-content">
+      <!-- 작성자 정보 -->
+      <div class="detail-header">
+        <div class="detail-author">
+          <span class="author-name" id="detailAuthorName">작성자</span>
+          <span class="post-date" id="detailPostDate">날짜</span>
+      </div>
+        <div class="detail-header-actions">
+          <button id="detailDelete" class="detail-delete-btn" style="display:none">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+          <button id="detailClose" class="detail-close-btn">
+            <i class="fa-solid fa-times"></i>
+          </button>
+          </div>
+          </div>
+      
+      <!-- 이미지 스크롤 영역 -->
+      <div class="detail-images" id="detailImages">
+        <!-- 이미지들이 여기에 동적으로 추가됩니다 -->
+        
+        <!-- 좋아요 애니메이션 하트들 -->
+        <div class="like-animation-container" id="likeAnimationContainer">
+          <!-- 애니메이션 하트들이 여기에 생성됩니다 -->
+        </div>
+          </div>
+      
+      <!-- 태그 영역 -->
+      <div class="detail-tags" id="detailTags">
+        <div class="detail-tags-content">
+          <!-- 태그들이 여기에 표시됩니다 -->
+        </div>
+        
+        <!-- 좋아요/공유 버튼 영역 -->
+        <div class="detail-actions">
+          <button class="detail-like-btn" id="detailLikeBtn">
+            <i class="fa-regular fa-heart"></i>
+            <span class="like-count" id="likeCount">0</span>
+          </button>
+          <button class="detail-share-btn" id="detailShareBtn">
+            <i class="fa-solid fa-share"></i>
+          </button>
+        </div>
+          </div>
+      
+      <!-- 관련 피드 섹션 -->
+      <div class="related-posts" id="relatedPosts">
+        <h3>다른 포스팅</h3>
+        <div class="related-posts-grid" id="relatedPostsGrid">
+          <!-- 다른 피드 썸네일들이 여기에 표시됩니다 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 로그인 모달 -->
+  <div id="loginModal" class="login-modal">
+    <div class="login-modal-content">
+      <div class="login-modal-header">
+        <h2>길드원 로그인</h2>
+        <button class="login-modal-close" id="loginModalClose">&times;</button>
+      </div>
+      <div class="login-modal-body">
+        <!-- Google 로그인 버튼 -->
+        <button type="button" class="btn btn-google" id="googleLoginBtn">
+          <i class="fab fa-google"></i>
+          Google로 로그인
+        </button>
+        
+        <div class="login-help">
+          <p>💡 로그인 안내:</p>
+          <ul>
+            <li>Google 계정으로 로그인하세요</li>
+            <li>승인된 사용자만 사진을 업로드할 수 있습니다</li>
+            <li>관리자 승인 후 업로드 권한이 부여됩니다</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 플로팅 포스팅 버튼 -->
+  <div class="floating-post-btn" id="floatingPostBtn" style="display:none">
+    <a href="create-post.html" class="floating-btn-link">
+      <i class="fa-solid fa-plus"></i>
+    </a>
+  </div>
+
+  <script>
+    const utils = {
+      formatDate: (timestamp) => {
+        if (!timestamp) return '';
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return date.toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+      },
+      escapeHtml: (text) => {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    };
+
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    const q = document.getElementById('q');
+    const dlg = document.getElementById('dlg');
+    const openAdd = document.getElementById('openAdd');
+    const form = document.getElementById('form');
+    const file = document.getElementById('file');
+    const captionEl = document.getElementById('caption');
+    const locationEl = document.getElementById('location');
+    const tagsEl = document.getElementById('tags');
+    const submitBtn = document.getElementById('submitBtn');
+    const imageUploadArea = document.getElementById('imageUploadArea');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const charCount = document.getElementById('charCount');
+    const authorName = document.getElementById('authorName');
+    const authorInitial = document.getElementById('authorInitial');
+    
+    let selectedFiles = [];
+    let imagePreviews = [];
+    
+    const detailModal = document.getElementById('detailModal');
+    const detailTitle = document.getElementById('detailTitle');
+    const detailImage = document.getElementById('detailImage');
+    const detailSubtitle = document.getElementById('detailSubtitle');
+    const detailAuthor = document.getElementById('detailAuthor');
+    const detailDate = document.getElementById('detailDate');
+    const detailTags = document.getElementById('detailTags');
+    const detailViewOriginal = document.getElementById('detailViewOriginal');
+    const detailDelete = document.getElementById('detailDelete');
+    const detailClose = document.getElementById('detailClose');
+    const cancelBtn = document.getElementById('cancelBtn');
+    
+    
+    let currentUser = null;
+    let isAdmin = false;
+    let isApprovedUser = false;
+    let currentPostId = null;
+    let currentPostLikes = [];
+    let userLikedPosts = new Set();
+
+    async function loadPhotos(){
+      try{ 
+        return await firebaseDataManager.loadPhotos(); 
+      }
+      catch(e){ 
+        // console.error('사진 로드 실패:', e);
+        return []; 
+      }
+    }
+    
+    function fmtDate(ts){
+      return utils.formatDate(ts);
+    }
+    async function render(filter=""){
+      const items = await loadPhotos();
+      const term = filter.trim().toLowerCase();
+      const filtered = term ? items.filter(it=>{
+        const hay = [it.title,it.subtitle,it.author,(it.tags||[]).join(",")].join(" ").toLowerCase();
+        return hay.includes(term);
+      }) : items;
+
+      grid.innerHTML = "";
+      if(filtered.length===0){ empty.hidden=false; return; }
+      empty.hidden=true;
+
+      for(const it of filtered.sort((a,b)=>(b.updatedAt || b.createdAt)-(a.updatedAt || a.createdAt))){
+        const card = document.createElement('article'); 
+        card.className = "midjourney-card";
+        
+        const imageUrls = it.urls || (it.url ? [it.url] : []);
+        const mainThumbnailIndex = it.mainThumbnailIndex || 0;
+        const mainImage = imageUrls[mainThumbnailIndex] || imageUrls[0];
+        const isMultiImage = it.isMultiImage || imageUrls.length > 1;
+        
+        // DB에서 작성자 이름 가져오기
+        let authorName = it.author || "";
+        try {
+          if (it.uploadedBy) {
+            const memberRef = firebaseDataManager.getDocRef('members', it.uploadedBy);
+            const memberSnap = await firebaseDataManager.getDocument(memberRef);
+            if (memberSnap.exists()) {
+              const memberData = memberSnap.data();
+              authorName = memberData.name || authorName;
+            }
+          }
+        } catch (error) {
+          // DB에서 이름을 가져오지 못한 경우 기존 author 사용
+        }
+        
+        card.innerHTML = `
+          <div class="card-image" style="cursor:pointer" data-id="${it.id}">
+            ${mainImage ? `<img src="${mainImage}" alt="">` : ""}
+            ${isMultiImage ? `<div class="multi-image-indicator"><i class="fa-solid fa-images"></i></div>` : ""}
+            <div class="image-overlay">
+              <div class="overlay-left">
+                <div class="tags-preview">
+                  ${(it.tags||[]).slice(0,3).map(t=>`<span class="tag-pill">${utils.escapeHtml(t)}</span>`).join("")}
+                  ${(it.tags||[]).length > 3 ? `<span class="more-tags">+${(it.tags||[]).length - 3}</span>` : ''}
+                </div>
+              </div>
+              <div class="overlay-right">
+                <div class="author-info-overlay">
+                  <span class="author-name-overlay">${utils.escapeHtml(authorName)}</span>
+                </div>
+              </div>
+            </div>
+            ${(isAdmin || (currentUser && it.uploadedBy === currentUser.uid)) ? 
+              `<button class="delete-btn-overlay" data-id="${it.id}" title="삭제">
+                <i class="fa-solid fa-trash"></i>
+              </button>` : ''}
+          </div>
+          <div class="card-footer">
+            <div class="post-meta">
+              <span class="post-date">${fmtDate(it.updatedAt || it.createdAt)}</span>
+              ${isMultiImage ? `<span class="image-count"><i class="fa-solid fa-images"></i> ${imageUrls.length}</span>` : ''}
+            </div>
+          </div>`;
+        grid.appendChild(card);
+      }
+
+      grid.querySelectorAll('.card-image').forEach(element=>{
+        element.onclick = () => {
+          const id = element.getAttribute('data-id');
+          showDetail(id);
+        };
+      });
+
+      grid.querySelectorAll('.delete-btn-overlay').forEach(btn=>{
+        btn.onclick = async () => {
+          const id = btn.getAttribute('data-id');
+          const items = await loadPhotos();
+          const item = items.find(it => it.id === id);
+          if (!item) return;
+          
+          const canDelete = isAdmin || (currentUser && item.uploadedBy === currentUser.uid);
+          if (!canDelete) {
+            alert('삭제 권한이 없습니다.');
+            return;
+          }
+          
+          if (confirm(`정말로 '${item.title}'을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+            try {
+              const success = await firebaseDataManager.deletePhoto(id);
+              if (success) {
+                await render(q.value);
+                alert('사진이 삭제되었습니다.');
+              } else {
+                alert('삭제에 실패했습니다.');
+              }
+            } catch (error) {
+              // console.error('삭제 오류:', error);
+              alert('삭제 중 오류가 발생했습니다.');
+            }
+          }
+        };
+      });
+    }
+    function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]))}
+
+    async function loadRelatedPosts(currentId) {
+      try {
+        const allItems = await loadPhotos();
+        const relatedItems = allItems.filter(item => item.id !== currentId);
+        
+        const relatedPostsGrid = document.getElementById('relatedPostsGrid');
+        relatedPostsGrid.innerHTML = '';
+        
+        const displayItems = relatedItems.slice(0, 6);
+        
+        for (const item of displayItems) {
+          const imageUrls = item.urls || (item.url ? [item.url] : []);
+          const mainThumbnailIndex = item.mainThumbnailIndex || 0;
+          const mainImage = imageUrls[mainThumbnailIndex] || imageUrls[0];
+          const isMultiImage = item.isMultiImage || imageUrls.length > 1;
+          
+          // DB에서 작성자 이름 가져오기
+          let authorName = item.author || "";
+          try {
+            if (item.uploadedBy) {
+              const memberRef = firebaseDataManager.getDocRef('members', item.uploadedBy);
+              const memberSnap = await firebaseDataManager.getDocument(memberRef);
+              if (memberSnap.exists()) {
+                const memberData = memberSnap.data();
+                authorName = memberData.name || authorName;
+              }
+            }
+          } catch (error) {
+            // DB에서 이름을 가져오지 못한 경우 기존 author 사용
+          }
+          
+          const relatedPost = document.createElement('div');
+          relatedPost.className = 'related-post-item';
+          relatedPost.setAttribute('data-id', item.id);
+          
+          relatedPost.innerHTML = `
+            <div class="related-post-image">
+              ${mainImage ? `<img src="${mainImage}" alt="">` : ""}
+              ${isMultiImage ? `<div class="related-multi-indicator"><i class="fa-solid fa-images"></i></div>` : ""}
+            </div>
+            <div class="related-post-info">
+              <span class="related-post-author">${utils.escapeHtml(authorName)}</span>
+              <span class="related-post-date">${fmtDate(item.updatedAt || item.createdAt)}</span>
+            </div>
+          `;
+          
+          relatedPost.addEventListener('click', () => {
+            showDetail(item.id);
+          });
+          
+          relatedPostsGrid.appendChild(relatedPost);
+        }
+        
+      } catch (error) {
+        // console.error('관련 피드 로드 실패:', error);
+      }
+    }
+
+    async function loadNoticePreview() {
+      const noticeSnippetList = document.getElementById('noticeSnippetList');
+      
+      try {
+        const notices = await firebaseDataManager.loadNotices();
+        const recentNotices = notices.slice(0, 3);
+        
+        if (recentNotices.length === 0) {
+          noticeSnippetList.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 20px;">등록된 공지사항이 없습니다.</p>';
+        } else {
+          for (const notice of recentNotices) {
+            const noticeItem = await createNoticeSnippetItem(notice);
+            noticeSnippetList.appendChild(noticeItem);
+          }
+        }
+      } catch (e) {
+        // console.error('공지사항 데이터 로드 실패:', e);
+        noticeSnippetList.innerHTML = '<p style="text-align: center; color: var(--danger); padding: 20px;">공지사항을 불러오는 중 오류가 발생했습니다.</p>';
+      }
+    }
+
+    async function createNoticeSnippetItem(notice) {
+      const item = document.createElement('div');
+      item.className = 'notice-snippet-item';
+      
+      function formatDate(timestamp) {
+        if (!timestamp) return '';
+        try {
+          const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+          return date.toLocaleDateString('ko-KR', {
+            month: '2-digit',
+            day: '2-digit'
+          });
+        } catch (e) {
+          return '';
+        }
+      }
+      
+      const isImportant = notice.isImportant || false;
+      
+      // 작성자 이름을 DB에서 가져오기
+      let authorName = notice.author; // 기본값
+      try {
+        if (notice.createdBy) {
+          const memberRef = firebaseDataManager.getDocRef('members', notice.createdBy);
+          const memberSnap = await firebaseDataManager.getDocument(memberRef);
+          if (memberSnap.exists()) {
+            const memberData = memberSnap.data();
+            authorName = memberData.name || authorName;
+          }
+        }
+      } catch (error) {
+        // console.error('작성자 정보 로드 실패:', error);
+      }
+      
+      item.innerHTML = `
+        <h4 class="notice-snippet-item-title ${isImportant ? 'important' : ''}">
+          ${isImportant ? '<i class="fa-solid fa-exclamation-triangle"></i>' : ''}
+          ${utils.escapeHtml(notice.title)}
+        </h4>
+        <div class="notice-snippet-item-meta">
+          <span>${utils.escapeHtml(authorName)}</span>
+          <span>${formatDate(notice.createdAt)}</span>
+        </div>
+      `;
+      
+      item.addEventListener('click', () => {
+        window.location.href = 'notice.html';
+      });
+      
+      return item;
+    }
+
+    async function openDetailWithRetry(photoId, retryCount = 0) {
+      const maxRetries = 3;
+      const items = await loadPhotos();
+      const item = items.find(it => it.id === photoId);
+      
+      if (item) {
+        showDetail(photoId);
+      } else if (retryCount < maxRetries) {
+        // 포스팅을 찾지 못한 경우 잠시 후 다시 시도
+        setTimeout(() => {
+          openDetailWithRetry(photoId, retryCount + 1);
+        }, 1000);
+      } else {
+        // 최대 재시도 횟수에 도달한 경우 일반 피드로 이동
+        alert('포스팅을 찾을 수 없습니다. 피드로 이동합니다.');
+        const url = new URL(window.location);
+        url.searchParams.delete('id');
+        window.history.replaceState({}, '', url);
+      }
+    }
+
+    // 좋아요 관련 함수들
+    async function loadPostLikes(postId) {
+      try {
+        const likesRef = firebaseDataManager.getCollection('post_likes');
+        const q = firebaseDataManager.query(likesRef, firebaseDataManager.where('postId', '==', postId));
+        const querySnapshot = await firebaseDataManager.getDocs(q);
+        
+        const likes = [];
+        querySnapshot.forEach((doc) => {
+          likes.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+        
+        return likes;
+      } catch (error) {
+        return [];
+      }
+    }
+
+    async function loadUserLikedPosts(userId) {
+      try {
+        const likesRef = firebaseDataManager.getCollection('post_likes');
+        const q = firebaseDataManager.query(likesRef, firebaseDataManager.where('userId', '==', userId));
+        const querySnapshot = await firebaseDataManager.getDocs(q);
+        
+        const likedPosts = new Set();
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          likedPosts.add(data.postId);
+        });
+        
+        return likedPosts;
+      } catch (error) {
+        return new Set();
+      }
+    }
+
+    async function toggleLike(postId, userId) {
+      try {
+        const likesRef = firebaseDataManager.getCollection('post_likes');
+        const q = firebaseDataManager.query(
+          likesRef, 
+          firebaseDataManager.where('postId', '==', postId),
+          firebaseDataManager.where('userId', '==', userId)
+        );
+        const querySnapshot = await firebaseDataManager.getDocs(q);
+        
+        if (querySnapshot.empty) {
+          // 좋아요 추가
+          await firebaseDataManager.addDoc(likesRef, {
+            postId: postId,
+            userId: userId,
+            createdAt: firebaseDataManager.serverTimestamp()
+          });
+          return true; // 좋아요 추가됨
+        } else {
+          // 좋아요 제거
+          const likeDoc = querySnapshot.docs[0];
+          await firebaseDataManager.deleteDoc(likeDoc.ref);
+          return false; // 좋아요 제거됨
+        }
+      } catch (error) {
+        // 오류 발생 시 현재 상태를 반환하여 UI 일관성 유지
+        const currentLikes = await loadPostLikes(postId);
+        const isCurrentlyLiked = currentLikes.some(like => like.userId === userId);
+        return isCurrentlyLiked;
+      }
+    }
+
+    function createLikeAnimation() {
+      const container = document.getElementById('likeAnimationContainer');
+      const heart = document.createElement('div');
+      heart.className = 'like-heart-animation';
+      heart.innerHTML = '<i class="fa-solid fa-heart"></i>';
+      
+      // 랜덤 위치와 크기
+      const size = Math.random() * 20 + 15; // 15-35px
+      const x = Math.random() * 200 - 100; // -100px ~ 100px
+      const rotation = Math.random() * 30 - 15; // -15도 ~ 15도
+      
+      heart.style.cssText = `
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) rotate(${rotation}deg);
+        font-size: ${size}px;
+        color: #ff6b9d;
+        pointer-events: none;
+        z-index: 1000;
+        animation: likeHeartFloat 1.5s ease-out forwards;
+      `;
+      
+      container.appendChild(heart);
+      
+      // 애니메이션 완료 후 제거
+      setTimeout(() => {
+        if (heart.parentNode) {
+          heart.parentNode.removeChild(heart);
+        }
+      }, 1500);
+    }
+
+    async function handleLikeClick() {
+      if (!currentUser) {
+        return;
+      }
+      
+      if (!currentPostId) return;
+      
+      const likeBtn = document.getElementById('detailLikeBtn');
+      const likeIcon = likeBtn.querySelector('i');
+      const likeCountEl = document.getElementById('likeCount');
+      
+      // 버튼 비활성화 (중복 클릭 방지)
+      likeBtn.disabled = true;
+      
+      // 현재 좋아요 수 가져오기
+      const currentCount = parseInt(likeCountEl.textContent) || 0;
+      
+      try {
+        const isLiked = await toggleLike(currentPostId, currentUser.uid);
+        
+        if (isLiked) {
+          // 좋아요 추가됨 - 즉시 UI 업데이트
+          userLikedPosts.add(currentPostId);
+          likeIcon.className = 'fa-solid fa-heart';
+          likeBtn.classList.add('liked');
+          likeCountEl.textContent = currentCount + 1; // 카운트 즉시 증가
+          createLikeAnimation();
+          createLikeAnimation(); // 두 개의 하트 애니메이션
+          setTimeout(() => createLikeAnimation(), 100); // 세 번째 하트
+        } else {
+          // 좋아요 제거됨 - 즉시 UI 업데이트
+          userLikedPosts.delete(currentPostId);
+          likeIcon.className = 'fa-regular fa-heart';
+          likeBtn.classList.remove('liked');
+          likeCountEl.textContent = Math.max(0, currentCount - 1); // 카운트 즉시 감소
+        }
+        
+        // 백그라운드에서 실제 데이터와 동기화 (사용자에게는 보이지 않음)
+        setTimeout(async () => {
+          try {
+            await updateLikeDisplay();
+          } catch (error) {
+            // 동기화 실패 시 무시
+          }
+        }, 100);
+        
+      } catch (error) {
+        // 오류 발생 시 UI를 원래 상태로 복원
+        const currentLikes = await loadPostLikes(currentPostId);
+        const isCurrentlyLiked = currentLikes.some(like => like.userId === currentUser.uid);
+        
+        if (isCurrentlyLiked) {
+          likeIcon.className = 'fa-solid fa-heart';
+          likeBtn.classList.add('liked');
+          userLikedPosts.add(currentPostId);
+        } else {
+          likeIcon.className = 'fa-regular fa-heart';
+          likeBtn.classList.remove('liked');
+          userLikedPosts.delete(currentPostId);
+        }
+        
+        
+        // 오류 알람 제거 - 조용히 처리
+      } finally {
+        // 버튼 다시 활성화
+        likeBtn.disabled = false;
+      }
+    }
+
+    async function updateLikeDisplay() {
+      if (!currentPostId) return;
+      
+      try {
+        const likes = await loadPostLikes(currentPostId);
+        const likeCount = likes.length;
+        
+        // 현재 사용자가 이 포스트에 좋아요를 눌렀는지 확인
+        const isLiked = likes.some(like => like.userId === currentUser?.uid);
+        
+        const likeBtn = document.getElementById('detailLikeBtn');
+        const likeCountEl = document.getElementById('likeCount');
+        const likeIcon = likeBtn.querySelector('i');
+        
+        if (likeCountEl) {
+          likeCountEl.textContent = likeCount;
+        }
+        
+        if (likeIcon) {
+          if (isLiked) {
+            likeIcon.className = 'fa-solid fa-heart';
+            likeBtn.classList.add('liked');
+          } else {
+            likeIcon.className = 'fa-regular fa-heart';
+            likeBtn.classList.remove('liked');
+          }
+        }
+        
+        // userLikedPosts Set도 동기화
+        if (isLiked) {
+          userLikedPosts.add(currentPostId);
+        } else {
+          userLikedPosts.delete(currentPostId);
+        }
+        
+      } catch (error) {
+        // 좋아요 표시 업데이트 실패
+      }
+    }
+
+    async function handleShareClick() {
+      const currentUrl = window.location.href;
+      
+      try {
+        await navigator.clipboard.writeText(currentUrl);
+        
+        // 공유 버튼에 피드백
+        const shareBtn = document.getElementById('detailShareBtn');
+        const shareIcon = shareBtn.querySelector('i');
+        shareIcon.className = 'fa-solid fa-check';
+        shareBtn.classList.add('shared');
+        
+        setTimeout(() => {
+          shareIcon.className = 'fa-solid fa-share';
+          shareBtn.classList.remove('shared');
+        }, 1500);
+        
+      } catch (error) {
+        // 클립보드 API 실패 시 대체 방법
+        const textArea = document.createElement('textarea');
+        textArea.value = currentUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        alert('링크가 클립보드에 복사되었습니다!');
+      }
+    }
+
+    async function showDetail(id) {
+      const items = await loadPhotos();
+      const item = items.find(it => it.id === id);
+      if (!item) return;
+      
+      currentPostId = id;
+
+      // DB에서 작성자 이름 가져오기
+      let authorName = item.author || "정보 없음";
+      try {
+        if (item.uploadedBy) {
+          const memberRef = firebaseDataManager.getDocRef('members', item.uploadedBy);
+          const memberSnap = await firebaseDataManager.getDocument(memberRef);
+          if (memberSnap.exists()) {
+            const memberData = memberSnap.data();
+            authorName = memberData.name || authorName;
+          }
+        }
+      } catch (error) {
+        // DB에서 이름을 가져오지 못한 경우 기존 author 사용
+      }
+
+      document.getElementById('detailAuthorName').textContent = authorName;
+      document.getElementById('detailPostDate').textContent = fmtDate(item.updatedAt || item.createdAt);
+      
+      const imageUrls = item.urls || (item.url ? [item.url] : []);
+      const detailImages = document.getElementById('detailImages');
+      
+      detailImages.innerHTML = '';
+      
+      imageUrls.forEach((url, index) => {
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'detail-image-item';
+        imageContainer.innerHTML = `
+          <img src="${url}" alt="이미지 ${index + 1}" loading="lazy">
+        `;
+        detailImages.appendChild(imageContainer);
+      });
+      
+      const tagsContainer = document.getElementById('detailTags').querySelector('.detail-tags-content');
+      tagsContainer.innerHTML = '';
+      if (item.tags && item.tags.length > 0) {
+        item.tags.forEach(tag => {
+          const tagEl = document.createElement('span');
+          tagEl.className = 'detail-tag-item';
+          tagEl.textContent = tag;
+          tagsContainer.appendChild(tagEl);
+        });
+      } else {
+        tagsContainer.innerHTML = '<span class="no-tags">태그가 없습니다</span>';
+      }
+
+      await loadRelatedPosts(id);
+
+      // 좋아요 표시 업데이트
+      await updateLikeDisplay();
+
+      const canDelete = isAdmin || (currentUser && item.uploadedBy === currentUser.uid);
+      const detailDelete = document.getElementById('detailDelete');
+      if (canDelete) {
+        detailDelete.style.display = 'flex';
+        detailDelete.onclick = async () => {
+          if (confirm(`정말로 이 포스팅을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+            try {
+              const success = await firebaseDataManager.deletePhoto(id);
+                if (success) {
+                  await render(q.value);
+                  detailModal.style.display = 'none';
+                // URL에서 id 파라미터 제거
+                const url = new URL(window.location);
+                url.searchParams.delete('id');
+                window.history.replaceState({}, '', url);
+                alert('포스팅이 삭제되었습니다.');
+                } else {
+                  alert('삭제에 실패했습니다.');
+                }
+            } catch (error) {
+              // console.error('삭제 오류:', error);
+              alert('삭제 중 오류가 발생했습니다.');
+            }
+          }
+        };
+      } else {
+        detailDelete.style.display = 'none';
+      }
+
+      detailModal.style.display = 'flex';
+      
+      const floatingPostBtn = document.getElementById('floatingPostBtn');
+      if (floatingPostBtn) {
+        floatingPostBtn.style.display = 'none';
+      }
+    }
+
+    detailClose.onclick = () => {
+      detailModal.style.display = 'none';
+      updateUploadButtonVisibility();
+      // URL에서 id 파라미터 제거
+      const url = new URL(window.location);
+      url.searchParams.delete('id');
+      window.history.replaceState({}, '', url);
+    };
+    
+    detailModal.onclick = (e) => {
+      if (e.target === detailModal) {
+        detailModal.style.display = 'none';
+        updateUploadButtonVisibility();
+        // URL에서 id 파라미터 제거
+        const url = new URL(window.location);
+        url.searchParams.delete('id');
+        window.history.replaceState({}, '', url);
+      }
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && detailModal.style.display === 'flex') {
+        detailModal.style.display = 'none';
+        updateUploadButtonVisibility();
+        // URL에서 id 파라미터 제거
+        const url = new URL(window.location);
+        url.searchParams.delete('id');
+        window.history.replaceState({}, '', url);
+      }
+    });
+
+    // 좋아요/공유 버튼 이벤트 리스너
+    document.getElementById('detailLikeBtn').addEventListener('click', handleLikeClick);
+    document.getElementById('detailShareBtn').addEventListener('click', handleShareClick);
+
+
+    function updateUploadButtonVisibility() {
+      const floatingPostBtn = document.getElementById('floatingPostBtn');
+      if (isAdmin || isApprovedUser) {
+        floatingPostBtn.style.display = 'block';
+      } else {
+        floatingPostBtn.style.display = 'none';
+      }
+    }
+
+    q.addEventListener('input', ()=>render(q.value));
+
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg) {
+        dlg.close();
+      }
+    });
+
+    dlg.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        dlg.close();
+      }
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      dlg.close();
+    });
+    
+    const cancelBtn2 = document.getElementById('cancelBtn2');
+    cancelBtn2.addEventListener('click', () => {
+      dlg.close();
+    });
+
+    imageUploadArea.addEventListener('click', () => {
+      file.click();
+    });
+
+    imageUploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      imageUploadArea.classList.add('drag-over');
+    });
+
+    imageUploadArea.addEventListener('dragleave', () => {
+      imageUploadArea.classList.remove('drag-over');
+    });
+
+    imageUploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      imageUploadArea.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files);
+      handleFileSelection(files);
+    });
+
+    file.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      handleFileSelection(files);
+    });
+
+    captionEl.addEventListener('input', () => {
+      const count = captionEl.value.length;
+      charCount.textContent = count;
+      
+      if (count > 2200) {
+        charCount.style.color = '#ff4444';
+      } else if (count > 2000) {
+        charCount.style.color = '#ff8800';
+      } else {
+        charCount.style.color = '#666';
+      }
+    });
+
+    function handleFileSelection(files) {
+      const imageFiles = files.filter(file => file.type.startsWith('image/'));
+      
+      if (imageFiles.length === 0) {
+        alert('이미지 파일만 선택할 수 있습니다.');
+        return;
+      }
+      
+      if (selectedFiles.length + imageFiles.length > 10) {
+        alert('최대 10장까지만 업로드할 수 있습니다.');
+        return;
+      }
+      
+      selectedFiles = [...selectedFiles, ...imageFiles];
+      displayImagePreviews();
+    }
+
+    function displayImagePreviews() {
+      imagePreviewContainer.innerHTML = '';
+      imagePreviews = [];
+      
+      selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const preview = document.createElement('div');
+          preview.className = 'image-preview';
+          preview.innerHTML = `
+            <img src="${e.target.result}" alt="미리보기">
+            <button type="button" class="remove-image" data-index="${index}">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          `;
+          
+          imagePreviewContainer.appendChild(preview);
+          imagePreviews.push(e.target.result);
+          
+          preview.querySelector('.remove-image').addEventListener('click', () => {
+            removeImage(index);
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+      
+      if (selectedFiles.length > 0) {
+        imageUploadArea.style.display = 'none';
+      } else {
+        imageUploadArea.style.display = 'flex';
+      }
+    }
+
+    function removeImage(index) {
+      selectedFiles.splice(index, 1);
+      displayImagePreviews();
+    }
+
+    function convertToWebP(file, quality = 0.8) {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          
+          canvas.toBlob((blob) => {
+            resolve(blob);
+          }, 'image/webp', quality);
+        };
+        
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    function resetPostingForm() {
+      selectedFiles = [];
+      imagePreviews = [];
+      imagePreviewContainer.innerHTML = '';
+      imageUploadArea.style.display = 'flex';
+      captionEl.value = '';
+      locationEl.value = '';
+      tagsEl.value = '';
+      charCount.textContent = '0';
+      charCount.style.color = '#666';
+    }
+
+    function updateAuthorInfo() {
+      if (currentUser) {
+        const name = currentUser.displayName || currentUser.email.split('@')[0];
+        authorName.textContent = name;
+        authorInitial.textContent = name.charAt(0).toUpperCase();
+      }
+    }
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      
+      if (!currentUser) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+      
+      if (!isAdmin && !isApprovedUser) {
+        alert('승인된 사용자 또는 관리자만 포스팅할 수 있습니다.');
+        return;
+      }
+      
+      if (selectedFiles.length === 0) {
+        alert("최소 1장의 이미지를 선택하세요.");
+        return;
+      }
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템이 아직 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      submitBtn.disabled = true; 
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 업로드 중...';
+
+      try{
+        const uploadedUrls = [];
+        
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const file = selectedFiles[i];
+          const webpBlob = await convertToWebP(file);
+          
+          const uploadResult = await firebaseDataManager.uploadImage(webpBlob, 'img/posting');
+          if (!uploadResult.success) {
+            throw new Error(uploadResult.error);
+          }
+          uploadedUrls.push(uploadResult.url);
+        }
+
+        const tagText = tagsEl.value.trim();
+        const tags = tagText ? tagText.split(/\s+/).map(tag => 
+          tag.startsWith('#') ? tag : `#${tag}`
+        ).filter(Boolean) : [];
+
+        // DB에서 사용자 이름 가져오기
+        let authorName = currentUser.displayName || currentUser.email.split('@')[0];
+        try {
+          const memberRef = firebaseDataManager.getDocRef('members', currentUser.uid);
+          const memberSnap = await firebaseDataManager.getDocument(memberRef);
+          if (memberSnap.exists()) {
+            const memberData = memberSnap.data();
+            authorName = memberData.name || authorName;
+          }
+        } catch (error) {
+          // DB에서 이름을 가져오지 못한 경우 기본값 사용
+        }
+
+        const photoData = {
+          urls: uploadedUrls,
+          caption: captionEl.value.trim(),
+          location: locationEl.value.trim(),
+          author: authorName,
+          tags: tags,
+          uploadedBy: currentUser.uid,
+          isMultiImage: uploadedUrls.length > 1
+        };
+        
+        await firebaseDataManager.addPhoto(photoData);
+        dlg.close(); 
+        await render(q.value);
+        alert('포스팅이 성공적으로 업로드되었습니다!');
+      }catch(err){
+        alert('업로드 실패: ' + err.message);
+      }finally{
+        submitBtn.disabled=false; 
+        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 공유하기';
+      }
+    });
+
+    const headerComponent = new HeaderComponent();
+    
+    // 헤더 컴포넌트 초기화 확인
+    setTimeout(() => {
+      if (headerComponent && typeof headerComponent.updateLoginButton === 'function') {
+        headerComponent.updateLoginButton();
+      }
+    }, 1000);
+    
+    const loginModal = document.getElementById('loginModal');
+    const loginModalClose = document.getElementById('loginModalClose');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+
+    function openLoginModal() {
+      loginModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLoginModal() {
+      loginModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    googleLoginBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템이 아직 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      try {
+        const result = await firebaseDataManager.signInWithGoogle();
+        if (result.success) {
+          currentUser = result.user;
+          await checkUserPermissions();
+          updateUploadButtonVisibility();
+          closeLoginModal();
+          
+          if (isAdmin) {
+            alert(`✅ 관리자 권한이 확인되었습니다. 모든 기능을 사용할 수 있습니다.`);
+          } else if (isApprovedUser) {
+            alert(`✅ 승인된 사용자입니다. 사진을 업로드할 수 있습니다.`);
+          } else {
+            alert(`⏳ 관리자 확인 중입니다.\n\n전사도로롱에게 승인을 요청해주세요.`);
+          }
+          
+          // 로그인 후 페이지 새로고침
+          window.location.reload();
+        } else {
+          alert('Google 로그인에 실패했습니다: ' + result.error);
+        }
+      } catch (error) {
+        // console.error('Google 로그인 오류:', error);
+        alert('Google 로그인 중 오류가 발생했습니다.');
+      }
+    });
+
+    loginModalClose.addEventListener('click', closeLoginModal);
+    loginModal.addEventListener('click', (e) => {
+      if (e.target === loginModal) {
+        closeLoginModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && loginModal.style.display === 'flex') {
+        closeLoginModal();
+      }
+    });
+
+    async function checkUserPermissions() {
+      if (!currentUser) {
+        isAdmin = false;
+        isApprovedUser = false;
+        userLikedPosts.clear();
+        return;
+      }
+      
+      try {
+        const memberRef = firebaseDataManager.getDocRef('members', currentUser.uid);
+        const memberSnap = await firebaseDataManager.getDocument(memberRef);
+        
+        if (memberSnap.exists()) {
+          const memberData = memberSnap.data();
+          isApprovedUser = memberData.status === 'approved';
+        } else {
+          isApprovedUser = false;
+        }
+        
+        // 관리자 권한 확인
+        isAdmin = await firebaseDataManager.isAdmin(currentUser.uid);
+        
+        // 사용자가 좋아요한 포스트 로드
+        userLikedPosts = await loadUserLikedPosts(currentUser.uid);
+        
+      } catch (error) {
+        // console.error('사용자 권한 확인 오류:', error);
+        isAdmin = false;
+        isApprovedUser = false;
+        userLikedPosts.clear();
+      }
+    }
+
+    function checkAuthState() {
+      if (typeof firebaseDataManager === 'undefined') {
+        return;
+      }
+      
+      const currentUserCheck = firebaseDataManager.getCurrentUser();
+      if (currentUserCheck) {
+        currentUser = currentUserCheck;
+        checkUserPermissions().then(() => {
+          updateUploadButtonVisibility();
+        });
+      } else {
+        currentUser = null;
+        isAdmin = false;
+        isApprovedUser = false;
+        updateUploadButtonVisibility();
+      }
+      
+      firebaseDataManager.onAuthStateChanged(async (user) => {
+        if (user) {
+          currentUser = user;
+          await checkUserPermissions();
+          updateUploadButtonVisibility();
+        } else {
+          currentUser = null;
+          isAdmin = false;
+          isApprovedUser = false;
+          updateUploadButtonVisibility();
+        }
+      });
+    }
+
+    async function initializePage() {
+      try {
+        if (typeof firebaseDataManager === 'undefined') {
+          setTimeout(initializePage, 1000);
+          return;
+        }
+        
+        await Promise.all([
+          render(),
+          loadNoticePreview()
+        ]);
+        checkAuthState();
+        
+        // URL 파라미터에서 id 확인하여 상세 페이지 열기
+        const urlParams = new URLSearchParams(window.location.search);
+        const photoId = urlParams.get('id');
+        if (photoId) {
+          // 새로 포스팅된 이미지가 Firestore에 반영될 때까지 기다린 후 상세 페이지 열기
+          setTimeout(() => {
+            openDetailWithRetry(photoId);
+          }, 1000);
+        }
+      } catch (error) {
+        // console.error('페이지 초기화 중 오류:', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 보안 시스템 초기화 (로그 한도 초과로 주석처리)
+      // if (typeof firebaseDataManager !== 'undefined') {
+      //   try {
+      //     await firebaseDataManager.initSecurity();
+      //   } catch (error) {
+      //     // 보안 초기화 실패 시에도 페이지는 정상 작동
+      //   }
+      // }
+      
+      // 글쓰기 버튼 이벤트 리스너
+      const createPostBtn = document.getElementById('createPostBtn');
+      if (createPostBtn) {
+        createPostBtn.addEventListener('click', () => {
+          window.location.href = 'create-post.html';
+        });
+      }
+      
+      setTimeout(initializePage, 500);
+    });
+
+  </script>
+</body>
+</html>

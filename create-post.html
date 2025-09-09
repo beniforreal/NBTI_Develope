@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>새 포스팅 - NBTI 길드</title>
+  <meta name="color-scheme" content="dark light">
+  <!-- 캐시 무효화 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="stylesheet" href="./styles.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Cropper.js CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+  <script type="module" src="./js/firebase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/supabase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/firebase-data-manager.js?v=1.0.0"></script>
+  <script src="./js/header-component.js?v=1.0.0"></script>
+  <script src="./js/footer-component.js?v=1.0.0"></script>
+  <!-- Cropper.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+</head>
+<body>
+  <!-- 헤더는 헤더 컴포넌트에서 자동 생성됩니다 -->
+
+  <!-- 히어로 섹션 -->
+  <section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <!-- <p class="hero-subtitle">마비노기 모바일 던컨 서버</p>
+      <h1 class="hero-title">새 포스팅</h1> -->
+    </div>
+  </section>
+
+  <div class="wrap">
+    <!-- 권한 확인 섹션 -->
+    <div id="permissionSection" class="permission-section" style="display: none;">
+      <div class="permission-card">
+        <h2>🚫 접근 권한 없음</h2>
+        <p>승인된 사용자 또는 관리자만 포스팅을 작성할 수 있습니다.</p>
+        <a href="picture.html" class="btn btn-primary">사진첩으로 돌아가기</a>
+      </div>
+    </div>
+
+    <!-- 포스팅 작성 섹션 -->
+    <div id="postingSection" class="posting-section">
+      <div class="posting-container">
+        <!-- 상단 네비게이션 -->
+        <div class="posting-header">
+          <a href="picture.html" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>돌아가기</span>
+          </a>
+        </div>
+        
+        <!-- 제목 -->
+        <div class="posting-title">
+          <h2>새 포스팅 작성</h2>
+        </div>
+
+        <!-- 포스팅 에디터 -->
+        <div class="posting-editor">
+          <!-- 이미지 업로드 영역 -->
+          <div class="image-upload-section">
+            <div class="upload-area" id="uploadArea">
+              <div class="upload-placeholder">
+                <i class="fa-solid fa-images"></i>
+                <h3>사진을 추가하세요</h3>
+                <p>드래그하거나 클릭하여 사진을 선택하세요</p>
+                <span>최대 10장까지 업로드 가능</span>
+              </div>
+              <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+            </div>
+            
+            <!-- 이미지 미리보기 및 썸네일 선택 -->
+            <div class="image-preview-section" id="imagePreviewSection" style="display: none;">
+              <div class="preview-header">
+                <h3>업로드된 사진</h3>
+                <p>메인 썸네일로 사용할 사진을 선택하세요</p>
+              </div>
+              <div class="image-grid" id="imageGrid"></div>
+            </div>
+          </div>
+
+          <!-- 태그 입력 영역 -->
+          <div class="tag-section">
+            <div class="tag-header">
+              <h3>태그</h3>
+              <p>포스팅과 관련된 태그를 입력하세요</p>
+            </div>
+            <div class="tag-input-container">
+              <input type="text" id="tagInput" placeholder="태그를 입력하고 Enter를 누르세요 (예: #길드 #모임)">
+              <div class="tag-list" id="tagList"></div>
+            </div>
+          </div>
+
+        </div>
+        
+        <!-- 발행하기 버튼 -->
+        <div class="posting-footer">
+          <button type="button" class="btn btn-primary publish-btn" id="publishBtn" disabled>
+            <i class="fa-solid fa-paper-plane"></i>
+            발행하기
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 크롭 모달 -->
+  <div id="cropModal" class="crop-modal">
+    <div class="crop-modal-content">
+      <div class="crop-modal-header">
+        <h3>이미지 크롭</h3>
+        <button class="crop-modal-close" id="cropModalClose">&times;</button>
+      </div>
+      <div class="crop-modal-body">
+        <div class="crop-container">
+          <img id="cropImage" src="" alt="크롭할 이미지">
+        </div>
+        <div class="crop-controls">
+          <button type="button" class="btn btn-secondary" id="cropCancel">취소</button>
+          <button type="button" class="btn btn-primary" id="cropConfirm">적용</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const headerComponent = new HeaderComponent();
+    const permissionSection = document.getElementById('permissionSection');
+    const postingSection = document.getElementById('postingSection');
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const imagePreviewSection = document.getElementById('imagePreviewSection');
+    const imageGrid = document.getElementById('imageGrid');
+    const tagInput = document.getElementById('tagInput');
+    const tagList = document.getElementById('tagList');
+    const publishBtn = document.getElementById('publishBtn');
+    const cropModal = document.getElementById('cropModal');
+    const cropImage = document.getElementById('cropImage');
+    const cropModalClose = document.getElementById('cropModalClose');
+    const cropCancel = document.getElementById('cropCancel');
+    const cropConfirm = document.getElementById('cropConfirm');
+    
+    let selectedFiles = [];
+    let selectedTags = [];
+    let mainThumbnailIndex = 0;
+    let currentUser = null;
+    let isAdmin = false;
+    let isApprovedUser = false;
+    let cropper = null;
+    let currentCropIndex = -1;
+
+    function convertToWebP(file, quality = 0.8) {
+      return new Promise((resolve, reject) => {
+        if (!file.type.startsWith('image/')) {
+          reject(new Error('이미지 파일이 아닙니다'));
+          return;
+        }
+        
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          
+          canvas.toBlob((blob) => {
+            if (blob && blob.size > 0) {
+              resolve(blob);
+            } else {
+              reject(new Error('WebP 변환에 실패했습니다'));
+            }
+          }, 'image/webp', quality);
+        };
+        
+        img.onerror = () => reject(new Error('이미지 로드에 실패했습니다'));
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    function handleFileSelection(files) {
+      const imageFiles = files.filter(file => file.type.startsWith('image/'));
+      
+      if (imageFiles.length === 0) {
+        alert('이미지 파일만 선택할 수 있습니다.');
+        return;
+      }
+      
+      if (selectedFiles.length + imageFiles.length > 10) {
+        alert('최대 10장까지만 업로드할 수 있습니다.');
+        return;
+      }
+      
+      selectedFiles = [...selectedFiles, ...imageFiles];
+      displayImagePreviews();
+      updatePublishButton();
+    }
+
+    function displayImagePreviews() {
+      imageGrid.innerHTML = '';
+      
+      selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const previewItem = document.createElement('div');
+          previewItem.className = `preview-item ${index === mainThumbnailIndex ? 'main-thumbnail' : ''}`;
+          previewItem.innerHTML = `
+            <div class="preview-image">
+              <img src="${e.target.result}" alt="미리보기">
+              ${index === mainThumbnailIndex ? '<div class="main-badge">메인</div>' : ''}
+            </div>
+            <div class="preview-actions">
+              <button type="button" class="set-main-btn" data-index="${index}">
+                ${index === mainThumbnailIndex ? '메인 썸네일' : '메인으로 설정'}
+              </button>
+              <button type="button" class="crop-btn" data-index="${index}">
+                <i class="fa-solid fa-crop"></i> 크롭
+              </button>
+              <button type="button" class="remove-btn" data-index="${index}">
+                <i class="fa-solid fa-times" style="color: black;"></i>
+              </button>
+            </div>
+          `;
+          
+          imageGrid.appendChild(previewItem);
+          
+          previewItem.querySelector('.set-main-btn').addEventListener('click', () => {
+            setMainThumbnail(index);
+          });
+          
+          previewItem.querySelector('.crop-btn').addEventListener('click', () => {
+            openCropModal(file, index);
+          });
+          
+          previewItem.querySelector('.remove-btn').addEventListener('click', () => {
+            removeImage(index);
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+      
+      // 업로드 영역은 항상 표시 (사진 추가 가능하도록)
+      uploadArea.style.display = 'flex';
+      imagePreviewSection.style.display = 'block';
+    }
+
+    function setMainThumbnail(index) {
+      mainThumbnailIndex = index;
+      displayImagePreviews();
+    }
+
+    function removeImage(index) {
+      selectedFiles.splice(index, 1);
+      if (mainThumbnailIndex >= selectedFiles.length) {
+        mainThumbnailIndex = Math.max(0, selectedFiles.length - 1);
+      }
+      displayImagePreviews();
+      updatePublishButton();
+    }
+
+    function addTag(tagText) {
+      const tag = tagText.trim();
+      if (!tag || selectedTags.includes(tag)) return;
+      
+      const formattedTag = tag.startsWith('#') ? tag : `#${tag}`;
+      selectedTags.push(formattedTag);
+      displayTags();
+      updatePublishButton();
+    }
+
+    function displayTags() {
+      tagList.innerHTML = '';
+      selectedTags.forEach((tag, index) => {
+        const tagElement = document.createElement('span');
+        tagElement.className = 'tag-item';
+        tagElement.innerHTML = `
+          ${tag}
+          <button type="button" class="remove-tag" data-index="${index}">
+            <i class="fa-solid fa-times" style="color: black;"></i>
+          </button>
+        `;
+        
+        tagElement.querySelector('.remove-tag').addEventListener('click', () => {
+          selectedTags.splice(index, 1);
+          displayTags();
+          updatePublishButton();
+        });
+        
+        tagList.appendChild(tagElement);
+      });
+    }
+
+    function updatePublishButton() {
+      const hasImages = selectedFiles.length > 0;
+      publishBtn.disabled = !hasImages;
+    }
+
+    function openCropModal(file, index) {
+      currentCropIndex = index;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        cropImage.src = e.target.result;
+        cropModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // Cropper 초기화
+        setTimeout(() => {
+          if (cropper) {
+            cropper.destroy();
+          }
+          cropper = new Cropper(cropImage, {
+            aspectRatio: 1, // 정사각형 비율
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 0.8,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
+            background: false,
+            modal: true,
+            responsive: true,
+            checkCrossOrigin: false
+          });
+        }, 100);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function closeCropModal() {
+      cropModal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      currentCropIndex = -1;
+    }
+
+    function convertCroppedImageToWebP(quality = 0.8) {
+      return new Promise((resolve, reject) => {
+        if (!cropper) {
+          reject(new Error('크롭 도구가 초기화되지 않았습니다'));
+          return;
+        }
+        
+        try {
+          const canvas = cropper.getCroppedCanvas({
+            width: 400,
+            height: 400,
+            minWidth: 200,
+            minHeight: 200,
+            maxWidth: 800,
+            maxHeight: 800,
+            fillColor: '#fff',
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high'
+          });
+          
+          if (!canvas) {
+            reject(new Error('크롭된 캔버스를 생성할 수 없습니다'));
+            return;
+          }
+          
+          canvas.toBlob((blob) => {
+            if (blob && blob.size > 0) {
+              resolve(blob);
+            } else {
+              reject(new Error('WebP 변환에 실패했습니다: 빈 파일이 생성되었습니다'));
+            }
+          }, 'image/webp', quality);
+        } catch (error) {
+          reject(new Error('WebP 변환 실패: ' + error.message));
+        }
+      });
+    }
+
+    async function publishPost() {
+      if (!currentUser || (!isAdmin && !isApprovedUser)) {
+        alert('승인된 사용자 또는 관리자만 포스팅할 수 있습니다.');
+        return;
+      }
+      
+      if (selectedFiles.length === 0) {
+        alert('최소 1장의 이미지를 선택하세요.');
+        return;
+      }
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템이 아직 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      publishBtn.disabled = true;
+      publishBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 발행 중...';
+      
+      try {
+        const uploadedUrls = [];
+        
+        // 모든 이미지를 WebP로 변환하여 업로드
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const file = selectedFiles[i];
+          const webpBlob = await convertToWebP(file);
+          
+          const uploadResult = await firebaseDataManager.uploadImage(webpBlob, 'img/posting');
+          if (!uploadResult.success) {
+            throw new Error(uploadResult.error);
+          }
+          uploadedUrls.push(uploadResult.url);
+        }
+
+        const postData = {
+          urls: uploadedUrls,
+          mainThumbnailIndex: mainThumbnailIndex,
+          tags: selectedTags,
+          author: currentUser.displayName || currentUser.email.split('@')[0],
+          uploadedBy: currentUser.uid,
+          isMultiImage: uploadedUrls.length > 1
+        };
+        
+        const result = await firebaseDataManager.addPhoto(postData);
+        
+        if (result.success) {
+          alert('포스팅이 성공적으로 발행되었습니다!');
+          window.location.href = `picture.html?id=${result.id}`;
+        } else {
+          throw new Error(result.error);
+        }
+        
+      } catch (error) {
+        // console.error('포스팅 발행 오류:', error);
+        alert('포스팅 발행에 실패했습니다: ' + error.message);
+      } finally {
+        publishBtn.disabled = false;
+        publishBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 발행하기';
+      }
+    }
+
+    async function checkUserPermissions() {
+      if (!currentUser) {
+        isAdmin = false;
+        isApprovedUser = false;
+        return;
+      }
+      
+      try {
+        const memberRef = firebaseDataManager.getDocRef('members', currentUser.uid);
+        const memberSnap = await firebaseDataManager.getDocument(memberRef);
+        
+        if (memberSnap.exists()) {
+          const memberData = memberSnap.data();
+          isApprovedUser = memberData.status === 'approved';
+        } else {
+          isApprovedUser = false;
+        }
+        
+        // 관리자 권한 확인
+        isAdmin = await firebaseDataManager.isAdmin(currentUser.uid);
+        
+      } catch (error) {
+        // console.error('사용자 권한 확인 오류:', error);
+        isAdmin = false;
+        isApprovedUser = false;
+      }
+    }
+
+    async function initializePage() {
+      if (typeof firebaseDataManager === 'undefined') {
+        // console.error('firebaseDataManager가 로드되지 않았습니다.');
+        setTimeout(initializePage, 1000);
+        return;
+      }
+      
+      // 현재 사용자 확인
+      const currentUserCheck = firebaseDataManager.getCurrentUser();
+      if (currentUserCheck) {
+        currentUser = currentUserCheck;
+        await checkUserPermissions();
+        
+        if (isAdmin || isApprovedUser) {
+          postingSection.style.display = 'block';
+          permissionSection.style.display = 'none';
+        } else {
+          postingSection.style.display = 'none';
+          permissionSection.style.display = 'block';
+        }
+      } else {
+        postingSection.style.display = 'none';
+        permissionSection.style.display = 'block';
+      }
+    }
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('drag-over');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('drag-over');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files);
+      handleFileSelection(files);
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      handleFileSelection(files);
+    });
+    
+    tagInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTag(tagInput.value);
+        tagInput.value = '';
+      }
+    });
+    
+    publishBtn.addEventListener('click', publishPost);
+
+    // 크롭 모달 이벤트 리스너
+    cropModalClose.addEventListener('click', closeCropModal);
+    cropCancel.addEventListener('click', closeCropModal);
+    
+    cropConfirm.addEventListener('click', async () => {
+      if (!cropper || currentCropIndex === -1) return;
+      
+      cropConfirm.disabled = true;
+      cropConfirm.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+      
+      try {
+        // 크롭된 이미지를 WebP로 변환
+        const webpBlob = await convertCroppedImageToWebP();
+        
+        // File 객체로 변환
+        const croppedFile = new File([webpBlob], `cropped_${Date.now()}.webp`, {
+          type: 'image/webp'
+        });
+        
+        // 기존 파일을 크롭된 파일로 교체
+        selectedFiles[currentCropIndex] = croppedFile;
+        
+        // 미리보기 업데이트
+        displayImagePreviews();
+        
+        closeCropModal();
+        alert('이미지가 성공적으로 크롭되었습니다!');
+        
+      } catch (error) {
+        alert('이미지 크롭 중 오류가 발생했습니다: ' + error.message);
+      } finally {
+        cropConfirm.disabled = false;
+        cropConfirm.innerHTML = '적용';
+      }
+    });
+    
+    // 모달 배경 클릭으로 닫기
+    cropModal.addEventListener('click', (e) => {
+      if (e.target === cropModal) {
+        closeCropModal();
+      }
+    });
+    
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && cropModal.style.display === 'flex') {
+        closeCropModal();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 보안 시스템 초기화 (로그 한도 초과로 주석처리)
+      // if (typeof firebaseDataManager !== 'undefined') {
+      //   try {
+      //     await firebaseDataManager.initSecurity();
+      //   } catch (error) {
+      //     // 보안 초기화 실패 시에도 페이지는 정상 작동
+      //   }
+      // }
+      
+      setTimeout(initializePage, 500);
+    });
+  </script>
+</body>
+</html>

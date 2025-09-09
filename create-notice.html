@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>공지사항 작성 - NBTI 길드</title>
+  <meta name="color-scheme" content="dark light">
+  <!-- 캐시 무효화 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="stylesheet" href="./styles.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Quill.js CSS -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <script type="module" src="./js/firebase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/supabase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/firebase-data-manager.js?v=1.0.0"></script>
+  <script src="./js/header-component.js?v=1.0.0"></script>
+  <script src="./js/footer-component.js?v=1.0.0"></script>
+  <!-- Quill.js -->
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+</head>
+<body>
+  <!-- 헤더는 헤더 컴포넌트에서 자동 생성됩니다 -->
+
+  <!-- 히어로 섹션 -->
+  <section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <!-- <p class="hero-subtitle">마비노기 모바일 던컨 서버</p>
+      <h1 class="hero-title">공지사항 작성</h1> -->
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="page-header">
+      <div class="page-title-row">
+        <button class="btn btn-secondary" id="backBtn">
+          <i class="fa-solid fa-arrow-left"></i>
+          돌아가기
+        </button>
+        <h1>
+          <i class="fa-solid fa-edit" style="color: #ff6b9d;"></i>
+          새 공지사항 작성
+        </h1>
+      </div>
+    </div>
+
+    <div class="notice-form-container">
+      <form id="noticeForm" class="notice-form">
+        <div class="form-group">
+          <label for="noticeTitle">제목</label>
+          <input type="text" id="noticeTitle" placeholder="공지사항 제목을 입력하세요" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="noticeContent">내용</label>
+          <div id="editor" style="height: 300px;"></div>
+          <textarea id="noticeContent" style="display: none;" required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="notice-checkbox-label">
+            <input type="checkbox" id="isImportant">
+            <span class="notice-checkmark"></span>
+            중요 공지사항으로 설정
+          </label>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="cancelBtn">취소</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fa-solid fa-paper-plane"></i>
+            공지사항 등록
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 로그인 모달 -->
+  <div id="loginModal" class="login-modal">
+    <div class="login-modal-content">
+      <div class="login-modal-header">
+        <h2>길드원 로그인</h2>
+        <button class="login-modal-close" id="loginModalClose">&times;</button>
+      </div>
+      <div class="login-modal-body">
+        <!-- Google 로그인 버튼 -->
+        <button type="button" class="btn btn-google" id="googleLoginBtn">
+          <i class="fab fa-google"></i>
+          Google로 로그인
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const headerComponent = new HeaderComponent();
+    
+    // 헤더 컴포넌트 초기화 확인
+    setTimeout(() => {
+      if (headerComponent && typeof headerComponent.updateLoginButton === 'function') {
+        headerComponent.updateLoginButton();
+      }
+    }, 1000);
+    
+    const noticeForm = document.getElementById('noticeForm');
+    const noticeTitle = document.getElementById('noticeTitle');
+    const noticeContent = document.getElementById('noticeContent');
+    const isImportant = document.getElementById('isImportant');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const backBtn = document.getElementById('backBtn');
+    const loginModal = document.getElementById('loginModal');
+    const loginModalClose = document.getElementById('loginModalClose');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    
+    let currentUser = null;
+    let isAdmin = false;
+    let quill = null;
+    let isEditMode = false;
+    let editNoticeId = null;
+
+    function initializeQuillEditor() {
+      const toolbarOptions = [
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        [{ 'align': [] }],
+        ['link', 'image'],
+        ['clean']
+      ];
+
+      quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+          toolbar: {
+            container: toolbarOptions,
+            handlers: {
+              'image': imageHandler
+            }
+          }
+        },
+        placeholder: '공지사항 내용을 입력하세요...'
+      });
+
+      // 에디터 내용이 변경될 때마다 textarea에 동기화
+      quill.on('text-change', function() {
+        const content = quill.root.innerHTML;
+        document.getElementById('noticeContent').value = content;
+      });
+    }
+
+    function imageHandler() {
+      const input = document.createElement('input');
+      input.setAttribute('type', 'file');
+      input.setAttribute('accept', 'image/*');
+      input.click();
+
+      input.onchange = async function() {
+        const file = input.files[0];
+        if (file) {
+          try {
+            // WebP로 변환
+            const webpBlob = await convertToWebP(file);
+            
+            // Supabase Storage에 업로드
+            const uploadResult = await firebaseDataManager.uploadImage(webpBlob, 'img/notices');
+            
+            if (uploadResult.success) {
+              const range = quill.getSelection();
+              quill.insertEmbed(range.index, 'image', uploadResult.url);
+              quill.setSelection(range.index + 1);
+            } else {
+              alert('이미지 업로드에 실패했습니다: ' + uploadResult.error);
+            }
+          } catch (error) {
+            // console.error('이미지 업로드 오류:', error);
+            alert('이미지 업로드 중 오류가 발생했습니다.');
+          }
+        }
+      };
+    }
+
+    function convertToWebP(file, quality = 0.8) {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          
+          canvas.toBlob((blob) => {
+            resolve(blob);
+          }, 'image/webp', quality);
+        };
+        
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    function openLoginModal() {
+      loginModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLoginModal() {
+      loginModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    async function checkUserPermissions() {
+      if (!currentUser) {
+        isAdmin = false;
+        return false;
+      }
+      
+      try {
+        // firebase-data-manager의 isAdmin 함수 사용
+        isAdmin = await firebaseDataManager.isAdmin(currentUser.uid);
+      } catch (error) {
+        isAdmin = false;
+      }
+      
+      return isAdmin;
+    }
+
+    async function checkAdminAccess() {
+      if (typeof firebaseDataManager === 'undefined') {
+        setTimeout(checkAdminAccess, 1000);
+        return;
+      }
+      
+      const currentUserCheck = firebaseDataManager.getCurrentUser();
+      if (!currentUserCheck) {
+        alert('로그인이 필요합니다.');
+        openLoginModal();
+        return;
+      }
+      
+      currentUser = currentUserCheck;
+      const hasAdminAccess = await checkUserPermissions();
+      
+      if (!hasAdminAccess) {
+        alert('길드장, 부길드장만 공지사항을 작성할 수 있습니다.\n\n현재 페이지에서 나갑니다.');
+        window.location.href = 'notice.html';
+        return;
+      }
+    }
+
+    googleLoginBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템이 아직 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      try {
+        const result = await firebaseDataManager.signInWithGoogle();
+        if (result.success) {
+          currentUser = result.user;
+          const hasAdminAccess = await checkUserPermissions();
+          
+          if (hasAdminAccess) {
+            closeLoginModal();
+            alert(`${result.user.displayName || result.user.email}님, 환영합니다!\n\n관리자 권한이 확인되었습니다.`);
+          } else {
+            alert('길드장, 부길드장만 공지사항을 작성할 수 있습니다.\n\n현재 페이지에서 나갑니다.');
+            window.location.href = 'notice.html';
+          }
+        } else {
+          alert('Google 로그인에 실패했습니다: ' + result.error);
+        }
+      } catch (error) {
+        // console.error('Google 로그인 오류:', error);
+        alert('Google 로그인 중 오류가 발생했습니다.');
+      }
+    });
+
+    loginModalClose.addEventListener('click', closeLoginModal);
+    loginModal.addEventListener('click', (e) => {
+      if (e.target === loginModal) {
+        closeLoginModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && loginModal.style.display === 'flex') {
+        closeLoginModal();
+      }
+    });
+
+    backBtn.addEventListener('click', () => {
+      window.location.href = 'notice.html';
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      if (confirm('작성 중인 내용이 사라집니다. 정말 나가시겠습니까?')) {
+        window.location.href = 'notice.html';
+      }
+    });
+
+    noticeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!currentUser) {
+        alert('로그인이 필요합니다.');
+        openLoginModal();
+        return;
+      }
+      
+      if (!isAdmin) {
+        alert('길드장, 부길드장만 공지사항을 작성할 수 있습니다.');
+        return;
+      }
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템이 아직 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      const title = noticeTitle.value.trim();
+      const content = quill ? quill.root.innerHTML : noticeContent.value.trim();
+      
+      if (!title || !content) {
+        alert('제목과 내용을 모두 입력해주세요.');
+        return;
+      }
+      
+      submitBtn.disabled = true;
+      const buttonText = isEditMode ? '수정 중...' : '등록 중...';
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${buttonText}`;
+      
+      try {
+        // 사용자 정보에서 실제 이름 가져오기
+        const memberRef = firebaseDataManager.getDocRef('members', currentUser.uid);
+        const memberSnap = await firebaseDataManager.getDocument(memberRef);
+        let authorName = currentUser.displayName || currentUser.email.split('@')[0];
+        
+        if (memberSnap.exists()) {
+          const memberData = memberSnap.data();
+          authorName = memberData.name || authorName;
+        }
+        
+        if (isEditMode && editNoticeId) {
+          // 편집 모드: 기존 공지사항 업데이트
+          const updateData = {
+            title: title,
+            content: content,
+            isImportant: isImportant.checked,
+            updatedAt: new Date()
+          };
+          
+          const success = await firebaseDataManager.updateNotice(editNoticeId, updateData);
+          
+          if (success) {
+            alert('공지사항이 성공적으로 수정되었습니다!');
+            window.location.href = 'notice.html';
+          } else {
+            alert('공지사항 수정에 실패했습니다.');
+          }
+        } else {
+          // 새 공지사항 작성
+          const noticeData = {
+            title: title,
+            content: content,
+            author: authorName,
+            createdBy: currentUser.uid,
+            isImportant: isImportant.checked,
+            createdAt: new Date()
+          };
+          
+          const success = await firebaseDataManager.addNotice(noticeData);
+          
+          if (success) {
+            alert('공지사항이 성공적으로 등록되었습니다!');
+            window.location.href = 'notice.html';
+          } else {
+            alert('공지사항 등록에 실패했습니다.');
+          }
+        }
+      } catch (error) {
+        // console.error('공지사항 등록 오류:', error);
+        alert('공지사항 등록 중 오류가 발생했습니다.');
+      } finally {
+        submitBtn.disabled = false;
+        const buttonText = isEditMode ? '공지사항 수정' : '공지사항 등록';
+        submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ${buttonText}`;
+      }
+    });
+
+    function checkAuthState() {
+      if (typeof firebaseDataManager === 'undefined') {
+        return;
+      }
+      
+      const currentUserCheck = firebaseDataManager.getCurrentUser();
+      if (currentUserCheck) {
+        currentUser = currentUserCheck;
+        checkUserPermissions();
+      } else {
+        currentUser = null;
+        isAdmin = false;
+      }
+      
+      firebaseDataManager.onAuthStateChanged(async (user) => {
+        if (user) {
+          currentUser = user;
+          await checkUserPermissions();
+        } else {
+          currentUser = null;
+          isAdmin = false;
+        }
+      });
+    }
+
+    async function loadNoticeForEdit(noticeId) {
+      try {
+        const noticeRef = firebaseDataManager.getDocRef('notices', noticeId);
+        const noticeSnap = await firebaseDataManager.getDocument(noticeRef);
+        
+        if (noticeSnap.exists()) {
+          const noticeData = noticeSnap.data();
+          
+          // 폼에 기존 데이터 채우기
+          noticeTitle.value = noticeData.title || '';
+          isImportant.checked = noticeData.isImportant || false;
+          
+          // Quill 에디터에 내용 설정
+          if (quill && noticeData.content) {
+            quill.root.innerHTML = noticeData.content;
+          }
+        } else {
+          alert('수정할 공지사항을 찾을 수 없습니다.');
+          window.location.href = 'notice.html';
+        }
+      } catch (error) {
+        // console.error('공지사항 로드 오류:', error);
+        alert('공지사항을 불러오는 중 오류가 발생했습니다.');
+        window.location.href = 'notice.html';
+      }
+    }
+
+    async function initializePage() {
+      try {
+        if (typeof firebaseDataManager === 'undefined') {
+          setTimeout(initializePage, 1000);
+          return;
+        }
+        
+        // URL 파라미터에서 편집 모드 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+        if (editId) {
+          isEditMode = true;
+          editNoticeId = editId;
+          document.querySelector('.hero-title').textContent = '공지사항 수정';
+          document.querySelector('h1').innerHTML = '<i class="fa-solid fa-edit" style="color: #ff6b9d;"></i> 공지사항 수정';
+        }
+        
+        // Quill 에디터 초기화
+        initializeQuillEditor();
+        
+        await checkAdminAccess();
+        checkAuthState();
+        
+        // 편집 모드인 경우 기존 데이터 로드
+        if (isEditMode && editNoticeId) {
+          await loadNoticeForEdit(editNoticeId);
+        }
+      } catch (error) {
+        // console.error('페이지 초기화 중 오류:', error);
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 보안 시스템 초기화 (로그 한도 초과로 주석처리)
+      // if (typeof firebaseDataManager !== 'undefined') {
+      //   try {
+      //     await firebaseDataManager.initSecurity();
+      //   } catch (error) {
+      //     // 보안 초기화 실패 시에도 페이지는 정상 작동
+      //   }
+      // }
+      
+      setTimeout(initializePage, 500);
+    });
+  </script>
+</body>
+</html>

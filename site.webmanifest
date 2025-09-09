@@ -1,0 +1,26 @@
+{
+  "name": "NBTI 길드",
+  "short_name": "NBTI 길드",
+  "description": "마비노기 모바일 던컨 서버의 NBTI 길드 공식 웹사이트",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "./img/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "./img/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "./img/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NBTI 길드 - 마비노기 모바일 던컨 서버</title>
+  <meta name="color-scheme" content="dark light">
+  
+  <!-- 파비콘 -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./img/apple-touch-icon.png">
+  <link rel="manifest" href="./site.webmanifest">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nbti.kro.kr/">
+  <meta property="og:title" content="NBTI 길드 - 마비노기 모바일 던컨 서버">
+  <meta property="og:description" content="마비노기 모바일 던컨 서버의 NBTI 길드 공식 웹사이트입니다. 길드원들과 함께하는 즐거운 모험을 시작하세요!">
+  <meta property="og:image" content="https://nbti.kro.kr/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="NBTI 길드">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://nbti.kro.kr/">
+  <meta property="twitter:title" content="NBTI 길드 - 마비노기 모바일 던컨 서버">
+  <meta property="twitter:description" content="마비노기 모바일 던컨 서버의 NBTI 길드 공식 웹사이트입니다. 길드원들과 함께하는 즐거운 모험을 시작하세요!">
+  <meta property="twitter:image" content="https://nbti.kro.kr/img/og-image.png">
+  
+  <!-- 기타 메타 태그 -->
+  <meta name="description" content="마비노기 모바일 던컨 서버의 NBTI 길드 공식 웹사이트입니다. 길드원들과 함께하는 즐거운 모험을 시작하세요!">
+  <meta name="keywords" content="마비노기, 모바일, 던컨서버, NBTI, 길드, 게임, 커뮤니티">
+  <meta name="author" content="NBTI 길드">
+  <!-- 캐시 무효화 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="stylesheet" href="./styles.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script type="module" src="./js/firebase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/supabase-config.js?v=1.0.0"></script>
+  <script type="module" src="./js/firebase-data-manager.js?v=1.0.0"></script>
+  <script src="./js/header-component.js?v=1.0.0"></script>
+  <script src="./js/footer-component.js?v=1.0.0"></script>
+</head>
+<body>
+  <!-- 헤더는 헤더 컴포넌트에서 자동 생성됩니다 -->
+
+  <!-- 히어로 섹션 -->
+  <section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <!-- <p class="hero-subtitle">마비노기 모바일 던컨 서버</p>
+      <h1 class="hero-title">NBTI 길드</h1> -->
+    </div>
+  </section>
+
+  <!-- 메인 컨텐츠 -->
+  <main class="main-content">
+    <!-- 공지사항 섹션 (전체 너비) -->
+    <div class="notice-snippet" id="noticeSnippet">
+      <div class="notice-snippet-header">
+        <h2 class="notice-snippet-title">
+          <i class="fa-solid fa-bullhorn"></i>
+          공지사항
+        </h2>
+        <a href="notice.html" class="notice-snippet-more">더보기</a>
+      </div>
+      <div class="notice-snippet-list" id="noticeSnippetList">
+        <!-- 공지사항 목록이 여기에 동적으로 추가됩니다 -->
+      </div>
+    </div>
+
+    <!-- 사진첩과 길드원 섹션 (그리드) -->
+    <div class="content-sections-container">
+      <!-- 사진첩 섹션 -->
+      <section class="content-section photo-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <img src="./img/camera.png" alt="카메라" class="section-icon">
+            사진첩
+          </h2>
+        </div>
+        
+        <div class="photo-grid" id="photoGrid">
+          <!-- 사진 카드들이 여기에 동적으로 추가됩니다 -->
+        </div>
+        
+        <a href="./picture.html" class="more-btn">더 많은 사진 보기</a>
+      </section>
+
+      <!-- 길드원 섹션 -->
+      <section class="content-section member-section">
+        <div class="section-header">
+          <h2 class="section-title">👥 길드원</h2>
+        </div>
+        
+        <div class="member-grid" id="memberGrid">
+          <!-- 길드원 카드들이 여기에 동적으로 추가됩니다 -->
+        </div>
+        
+        <a href="./members.html" class="more-btn">NBTigram으로 이동</a>
+      </section>
+    </div>
+  </main>
+
+  <!-- 로그인 모달 -->
+  <div id="loginModal" class="login-modal">
+    <div class="login-modal-content">
+      <div class="login-modal-header">
+        <h2>길드원 로그인</h2>
+        <button class="login-modal-close" id="loginModalClose">&times;</button>
+      </div>
+      <div class="login-modal-body">
+        <!-- Google 로그인 버튼 -->
+        <button type="button" class="btn btn-google" id="googleLoginBtn">
+          <i class="fab fa-google"></i>
+          Google로 로그인
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function loadPhotoPreview() {
+      const photoGrid = document.getElementById('photoGrid');
+      
+      try {
+        const photos = await firebaseDataManager.loadPhotos();
+        const recentPhotos = photos
+          .sort((a, b) => (b.updatedAt || b.createdAt) - (a.updatedAt || a.createdAt))
+          .slice(0, 8);
+        
+        if (recentPhotos.length === 0) {
+          photoGrid.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 40px;">아직 업로드된 사진이 없습니다.</p>';
+        } else {
+          for (const photo of recentPhotos) {
+            const photoCard = await createPhotoCard(photo);
+            photoGrid.appendChild(photoCard);
+          }
+        }
+      } catch (e) {
+        // console.error('사진 데이터 로드 실패:', e);
+        photoGrid.innerHTML = '<p style="text-align: center; color: var(--danger); padding: 40px;">사진을 불러오는 중 오류가 발생했습니다.</p>';
+      }
+    }
+    
+    async function createPhotoCard(photo) {
+      const card = document.createElement('div');
+      card.className = 'photo-card';
+      
+      const imageUrls = photo.urls || (photo.url ? [photo.url] : []);
+      const mainThumbnailIndex = photo.mainThumbnailIndex || 0;
+      const mainImage = imageUrls[mainThumbnailIndex] || imageUrls[0];
+      const isMultiImage = photo.isMultiImage || imageUrls.length > 1;
+      
+      function formatDate(timestamp) {
+        if (!timestamp) return '';
+        try {
+          const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+          return date.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+        } catch (e) {
+          return '';
+        }
+      }
+      
+      function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+      
+      // DB에서 작성자 이름 가져오기
+      let authorName = photo.author || '';
+      try {
+        if (photo.uploadedBy) {
+          const memberRef = firebaseDataManager.getDocRef('members', photo.uploadedBy);
+          const memberSnap = await firebaseDataManager.getDocument(memberRef);
+          if (memberSnap.exists()) {
+            const memberData = memberSnap.data();
+            authorName = memberData.name || authorName;
+          }
+        }
+      } catch (error) {
+        // DB에서 이름을 가져오지 못한 경우 기존 author 사용
+      }
+      
+      card.innerHTML = `
+        <div class="photo-thumb">
+          <img src="${mainImage}" alt="포스팅" loading="lazy">
+          ${isMultiImage ? `<div class="multi-image-indicator"><i class="fa-solid fa-images"></i></div>` : ""}
+        </div>
+        <div class="photo-meta">
+          <div class="photo-info">
+            <span class="author">${escapeHtml(authorName)}</span>
+            <span class="date">${formatDate(photo.updatedAt || photo.createdAt)}</span>
+            ${isMultiImage ? `<span class="image-count"><i class="fa-solid fa-images"></i> ${imageUrls.length}</span>` : ''}
+          </div>
+        </div>
+      `;
+      
+      // 전체 카드에 클릭 이벤트 추가
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => {
+        window.location.href = `picture.html?id=${photo.id}`;
+      });
+      
+      return card;
+    }
+    
+    async function loadMemberPreview() {
+      const memberGrid = document.getElementById('memberGrid');
+      
+      try {
+        const members = await firebaseDataManager.loadMembers();
+        const recentMembers = members
+          .filter(member => member.status === 'approved')
+          .slice(0, 22);
+        
+        if (recentMembers.length === 0) {
+          memberGrid.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 40px;">등록된 길드원이 없습니다.</p>';
+        } else {
+          recentMembers.forEach(member => {
+            const memberCard = createMemberCard(member);
+            memberGrid.appendChild(memberCard);
+          });
+        }
+      } catch (e) {
+        // console.error('길드원 데이터 로드 실패:', e);
+        memberGrid.innerHTML = '<p style="text-align: center; color: var(--danger); padding: 40px;">길드원 정보를 불러오는 중 오류가 발생했습니다.</p>';
+      }
+    }
+
+    async function loadNoticePreview() {
+      const noticeSnippetList = document.getElementById('noticeSnippetList');
+      
+      try {
+        const notices = await firebaseDataManager.loadNotices();
+        const recentNotices = notices.slice(0, 3);
+        
+        if (recentNotices.length === 0) {
+          noticeSnippetList.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 20px;">등록된 공지사항이 없습니다.</p>';
+        } else {
+          for (const notice of recentNotices) {
+            const noticeItem = await createNoticeSnippetItem(notice);
+            noticeSnippetList.appendChild(noticeItem);
+          }
+        }
+      } catch (e) {
+        // console.error('공지사항 데이터 로드 실패:', e);
+        noticeSnippetList.innerHTML = '<p style="text-align: center; color: var(--danger); padding: 20px;">공지사항을 불러오는 중 오류가 발생했습니다.</p>';
+      }
+    }
+
+    async function createNoticeSnippetItem(notice) {
+      const item = document.createElement('div');
+      item.className = 'notice-snippet-item';
+      
+      function formatDate(timestamp) {
+        if (!timestamp) return '';
+        try {
+          const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+          return date.toLocaleDateString('ko-KR', {
+            month: '2-digit',
+            day: '2-digit'
+          });
+        } catch (e) {
+          return '';
+        }
+      }
+      
+      function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+      
+      const isImportant = notice.isImportant || false;
+      
+      // 작성자 이름을 DB에서 가져오기
+      let authorName = notice.author; // 기본값
+      try {
+        if (notice.createdBy) {
+          const memberRef = firebaseDataManager.getDocRef('members', notice.createdBy);
+          const memberSnap = await firebaseDataManager.getDocument(memberRef);
+          if (memberSnap.exists()) {
+            const memberData = memberSnap.data();
+            authorName = memberData.name || authorName;
+          }
+        }
+      } catch (error) {
+        // console.error('작성자 정보 로드 실패:', error);
+      }
+      
+      item.innerHTML = `
+        <h4 class="notice-snippet-item-title ${isImportant ? 'important' : ''}">
+          ${isImportant ? '<i class="fa-solid fa-exclamation-triangle"></i>' : ''}
+          ${escapeHtml(notice.title)}
+        </h4>
+        <div class="notice-snippet-item-meta">
+          <span>${escapeHtml(authorName)}</span>
+          <span>${formatDate(notice.createdAt)}</span>
+        </div>
+      `;
+      
+      item.addEventListener('click', () => {
+        window.location.href = 'notice.html';
+      });
+      
+      return item;
+    }
+    
+    function createMemberCard(member) {
+      const card = document.createElement('div');
+      card.className = 'member-card';
+      
+      const coverStyle = member.cover ? 
+        `background-image: url('${member.cover}')` : 
+        `background-image: url('img/cover.webp')`;
+      
+      const tagsHtml = member.tags && member.tags.length > 0 ? 
+        member.tags.map(tag => `<span class="member-tag">${utils.escapeHtml(tag)}</span>`).join('') : 
+        '';
+      
+      card.innerHTML = `
+        <div class="member-cover" style="${coverStyle}">
+        </div>
+        <div class="member-info">
+          <div class="member-name-mbti">
+            <h3 class="member-name">${utils.escapeHtml(member.name)}</h3>
+            <span class="member-mbti">${utils.escapeHtml(member.mbti || 'MBTI 미설정')}</span>
+          </div>
+          <p class="member-role">${utils.escapeHtml(member.role || '길드원')}</p>
+          ${tagsHtml ? `<div class="member-tags">${tagsHtml}</div>` : ''}
+          ${member.bio ? `<p class="member-bio">${utils.escapeHtml(member.bio)}</p>` : ''}
+        </div>
+      `;
+      return card;
+    }
+    
+    async function initializePage() {
+      try {
+        await Promise.all([
+          loadPhotoPreview(),
+          loadMemberPreview(),
+          loadNoticePreview()
+        ]);
+      } catch (error) {
+        // console.error('페이지 초기화 중 오류:', error);
+      }
+    }
+
+    const headerComponent = new HeaderComponent();
+    
+    // 헤더 컴포넌트 초기화 확인
+    setTimeout(() => {
+      if (headerComponent && typeof headerComponent.updateLoginButton === 'function') {
+        headerComponent.updateLoginButton();
+      }
+    }, 1000);
+    
+    let currentUser = null;
+    const loginModal = document.getElementById('loginModal');
+    const loginForm = document.getElementById('loginForm');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+
+    function openLoginModal() {
+      loginModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLoginModal() {
+      loginModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    googleLoginBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      if (typeof firebaseDataManager === 'undefined') {
+        alert('시스템이 아직 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      try {
+        const result = await firebaseDataManager.signInWithGoogle();
+        if (result.success) {
+          currentUser = result.user;
+          closeLoginModal();
+          
+          await checkUserStatusAndRedirect();
+          // 로그인 후 페이지 새로고침
+          window.location.reload();
+        } else {
+          alert('Google 로그인에 실패했습니다: ' + result.error);
+        }
+      } catch (error) {
+        // console.error('Google 로그인 오류:', error);
+        alert('Google 로그인 중 오류가 발생했습니다.');
+      }
+    });
+
+    loginModalClose.addEventListener('click', closeLoginModal);
+    loginModal.addEventListener('click', (e) => {
+      if (e.target === loginModal) {
+        closeLoginModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && loginModal.style.display === 'flex') {
+        closeLoginModal();
+      }
+    });
+
+    async function checkUserStatusAndRedirect() {
+      if (!currentUser) return;
+      
+      try {
+        const memberRef = firebaseDataManager.getDocRef('members', currentUser.uid);
+        const memberSnap = await firebaseDataManager.getDocument(memberRef);
+        
+        if (memberSnap.exists()) {
+          const memberData = memberSnap.data();
+          const status = memberData.status || 'pending';
+          
+          if (status === 'approved') {
+          } else {
+            alert('⏳ 관리자 확인 중입니다.\n\n전사도로롱에게 승인을 요청해주세요.\n\n승인 후 모든 기능을 사용할 수 있습니다.');
+          }
+        } else {
+          alert('⏳ 관리자 확인 중입니다.\n\n전사도로롱에게 승인을 요청해주세요.\n\n승인 후 모든 기능을 사용할 수 있습니다.');
+        }
+      } catch (error) {
+        // console.error('사용자 상태 확인 오류:', error);
+        alert('⏳ 관리자 확인 중입니다.\n\n전사도로롱에게 승인을 요청해주세요.');
+      }
+    }
+
+    function checkLoginStatus() {
+      if (typeof firebaseDataManager !== 'undefined') {
+        const currentUserCheck = firebaseDataManager.getCurrentUser();
+        if (currentUserCheck) {
+          currentUser = currentUserCheck;
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 보안 시스템 초기화 (로그 한도 초과로 주석처리)
+      // if (typeof firebaseDataManager !== 'undefined') {
+      //   try {
+      //     await firebaseDataManager.initSecurity();
+      //   } catch (error) {
+      //     // 보안 초기화 실패 시에도 페이지는 정상 작동
+      //   }
+      // }
+      
+      initializePage();
+      checkLoginStatus();
+    });
+  </script>
+</body>
+</html>

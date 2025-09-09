@@ -1,0 +1,13 @@
+# Firebase Storage Rules - Supabase Storage로 마이그레이션됨
+# 이 파일은 더 이상 사용되지 않습니다.
+# Supabase Storage 정책은 supabase-storage-policy.sql 파일을 참조하세요.
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 모든 접근 차단 (Supabase Storage 사용)
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
