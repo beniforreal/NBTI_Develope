@@ -1161,6 +1161,8 @@ footer {
   cursor: pointer;
   transition: all 0.3s ease;
   background: var(--panel-2);
+  justify-content: center;
+  align-items: center;
 }
 
 .upload-area:hover,
