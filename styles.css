@@ -5282,7 +5282,7 @@ dialog {
 }
 
 .notice-snippet-item-title.important {
-  color: var(--accent);
+  color: var(--warn);
 }
 
 .notice-snippet-item-meta {
