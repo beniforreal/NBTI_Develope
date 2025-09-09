@@ -2110,24 +2110,67 @@ footer {
   box-shadow: 0 4px 8px rgba(252, 129, 129, 0.3);
 }
 
-/* ===== 모바일 사이드바 스타일 ===== */
+/* ===== 모바일 하단 고정 메뉴바 스타일 ===== */
 
-.mobile-sidebar {
+.mobile-bottom-nav {
   position: fixed;
-  top: 0;
-  left: -100%;
-  width: 280px;
-  height: 100vh;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: var(--panel-2);
-  z-index: 2000;
-  transition: left 0.3s ease;
-  box-shadow: 2px 0 20px rgba(224, 139, 93, 0.1);
-  display: flex;
-  flex-direction: column;
+  border-top: 1px solid var(--border);
+  z-index: 1000;
+  display: none;
+  padding: 8px 0;
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
 }
 
-.mobile-sidebar.active {
-  left: 0;
+.bottom-nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  color: var(--text);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  margin: 0 4px;
+  min-height: 60px;
+  flex: 1;
+}
+
+.bottom-nav-link i {
+  font-size: 20px;
+  margin-bottom: 4px;
+  transition: transform 0.3s ease;
+}
+
+.bottom-nav-link span {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.bottom-nav-link:hover,
+.bottom-nav-link.active {
+  color: var(--accent);
+  background: rgba(255, 107, 157, 0.1);
+}
+
+.bottom-nav-link:hover i,
+.bottom-nav-link.active i {
+  transform: scale(1.1);
+}
+
+.bottom-nav-link.auth-link {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bottom-nav-link.auth-link:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-header {
@@ -4384,11 +4427,18 @@ dialog {
   .wrap {
     padding: 0 16px;
     margin: 20px 0;
+    padding-bottom: 80px; /* 하단 메뉴바 공간 확보 */
   }
   
   .admin-wrap {
     padding: 0 12px;
     margin: 80px auto 30px;
+    padding-bottom: 80px; /* 하단 메뉴바 공간 확보 */
+  }
+  
+  /* 모바일에서 하단 메뉴바 표시 */
+  .mobile-bottom-nav {
+    display: flex;
   }
   
   header {

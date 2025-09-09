@@ -30,7 +30,7 @@ class HeaderComponent {
             <nav class="header-nav">
               <a href="picture.html" class="nav-link" data-page="picture">
                 <img src="img/camera.png" alt="카메라" class="nav-icon">
-                사진첩
+                모아보기
               </a>
               <a href="members.html" class="nav-link" data-page="members">👥 길드원</a>
               <div class="auth-buttons">
@@ -58,44 +58,33 @@ class HeaderComponent {
           </div>
         </div>
 
-        <!-- 모바일 사이드바 -->
-        <div class="mobile-sidebar" id="mobileSidebar">
-          <div class="sidebar-header">
-            <a href="index.html" class="sidebar-logo">
-              <h2>🏰 NBTI 길드</h2>
-            </a>
-            <button class="sidebar-close" id="sidebarClose">&times;</button>
-          </div>
-          <nav class="sidebar-nav">
-            <div class="sidebar-main-nav">
-              <a href="picture.html" class="sidebar-link" data-page="picture">
-                <i class="fa-solid fa-camera" style="color: #ff6b9d;"></i>
-                <span>사진첩</span>
-              </a>
-              <a href="members.html" class="sidebar-link" data-page="members">
-                <i class="fa-solid fa-users" style="color: #4dabf7;"></i>
-                <span>길드원</span>
-              </a>
-            </div>
-            <div class="sidebar-auth-buttons">
-              <a href="#" class="sidebar-link login-btn" id="mobileLoginBtn" title="로그인" style="display: flex;">
-                <i class="fa-solid fa-right-to-bracket" style="color: #FFD43B;"></i>
-                <span>로그인</span>
-              </a>
-              <a href="mypage.html" class="sidebar-link mypage-btn" id="mobileMypageBtn" title="마이페이지" style="display: none;">
-                <i class="fa-solid fa-user" style="color: #4CAF50;"></i>
-                <span>마이페이지</span>
-              </a>
-              <a href="#" class="sidebar-link logout-btn" id="mobileLogoutBtn" title="로그아웃" style="display: none;">
-                <i class="fa-solid fa-sign-out-alt" style="color: #ff4444;"></i>
-                <span>로그아웃</span>
-              </a>
-            </div>
-          </nav>
+        <!-- 모바일 하단 고정 메뉴바 -->
+        <div class="mobile-bottom-nav" id="mobileBottomNav">
+          <a href="index.html" class="bottom-nav-link" data-page="index">
+            <i class="fa-solid fa-home"></i>
+            <span>홈</span>
+          </a>
+          <a href="picture.html" class="bottom-nav-link" data-page="picture">
+            <i class="fa-solid fa-camera"></i>
+            <span>모아보기</span>
+          </a>
+          <a href="members.html" class="bottom-nav-link" data-page="members">
+            <i class="fa-solid fa-users"></i>
+            <span>길드원</span>
+          </a>
+          <a href="#" class="bottom-nav-link auth-link login-btn" id="mobileLoginBtn" title="로그인" style="display: flex;">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span>로그인</span>
+          </a>
+          <a href="mypage.html" class="bottom-nav-link auth-link mypage-btn" id="mobileMypageBtn" title="마이페이지" style="display: none;">
+            <i class="fa-solid fa-user"></i>
+            <span>마이페이지</span>
+          </a>
+          <a href="#" class="bottom-nav-link auth-link logout-btn" id="mobileLogoutBtn" title="로그아웃" style="display: none;">
+            <i class="fa-solid fa-sign-out-alt"></i>
+            <span>로그아웃</span>
+          </a>
         </div>
-
-        <!-- 모바일 사이드바 오버레이 -->
-        <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
       </header>
     `;
 
@@ -108,21 +97,10 @@ class HeaderComponent {
   }
 
   attachEventListeners() {
+    // 모바일 메뉴 버튼은 더 이상 필요하지 않음 (하단 고정 메뉴바 사용)
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileSidebar = document.getElementById('mobileSidebar');
-    const sidebarClose = document.getElementById('sidebarClose');
-    const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
-
     if (mobileMenuBtn) {
-      mobileMenuBtn.addEventListener('click', () => this.openSidebar());
-    }
-
-    if (sidebarClose) {
-      sidebarClose.addEventListener('click', () => this.closeSidebar());
-    }
-
-    if (mobileSidebarOverlay) {
-      mobileSidebarOverlay.addEventListener('click', () => this.closeSidebar());
+      mobileMenuBtn.style.display = 'none'; // 모바일 메뉴 버튼 숨김
     }
 
     const loginBtn = document.getElementById('loginBtn');
@@ -315,27 +293,7 @@ class HeaderComponent {
     }
   }
 
-  openSidebar() {
-    const mobileSidebar = document.getElementById('mobileSidebar');
-    const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
-    
-    if (mobileSidebar && mobileSidebarOverlay) {
-      mobileSidebar.classList.add('active');
-      mobileSidebarOverlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-  }
-
-  closeSidebar() {
-    const mobileSidebar = document.getElementById('mobileSidebar');
-    const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
-    
-    if (mobileSidebar && mobileSidebarOverlay) {
-      mobileSidebar.classList.remove('active');
-      mobileSidebarOverlay.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-  }
+  // 사이드바 관련 함수들은 더 이상 필요하지 않음 (하단 고정 메뉴바 사용)
 }
 
 window.HeaderComponent = HeaderComponent;
