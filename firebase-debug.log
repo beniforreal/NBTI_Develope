@@ -1,0 +1,66 @@
+[debug] [2025-09-09T08:31:03.984Z] ----------------------------------------------------------------------
+[debug] [2025-09-09T08:31:03.989Z] Command:       /opt/homebrew/Cellar/node/23.11.0/bin/node /opt/homebrew/bin/firebase deploy
+[debug] [2025-09-09T08:31:03.989Z] CLI Version:   14.15.2
+[debug] [2025-09-09T08:31:03.989Z] Platform:      darwin
+[debug] [2025-09-09T08:31:03.989Z] Node Version:  v23.11.0
+[debug] [2025-09-09T08:31:03.990Z] Time:          Tue Sep 09 2025 17:31:03 GMT+0900 (Korean Standard Time)
+[debug] [2025-09-09T08:31:03.990Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-09-09T08:31:04.093Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-09-09T08:31:04.093Z] > authorizing via signed-in user (bil2umm@gmail.com)
+[debug] [2025-09-09T08:31:04.093Z] [iam] checking project nbti-37b3f for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-09-09T08:31:04.094Z] Checked if tokens are valid: false, expires at: 1757403849688
+[debug] [2025-09-09T08:31:04.094Z] Checked if tokens are valid: false, expires at: 1757403849688
+[debug] [2025-09-09T08:31:04.094Z] > refreshing access token with scopes: []
+[debug] [2025-09-09T08:31:04.095Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-09-09T08:31:04.095Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-09-09T08:31:04.343Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-09-09T08:31:04.344Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-09-09T08:31:04.353Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/nbti-37b3f:testIamPermissions [none]
+[debug] [2025-09-09T08:31:04.353Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/nbti-37b3f:testIamPermissions x-goog-quota-user=projects/nbti-37b3f
+[debug] [2025-09-09T08:31:04.353Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/nbti-37b3f:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-09-09T08:31:04.615Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/nbti-37b3f:testIamPermissions 200
+[debug] [2025-09-09T08:31:04.615Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/nbti-37b3f:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-09-09T08:31:04.615Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:04.615Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:04.616Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/nbti-37b3f [none]
+[debug] [2025-09-09T08:31:05.028Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/nbti-37b3f 200
+[debug] [2025-09-09T08:31:05.029Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/nbti-37b3f {"projectId":"nbti-37b3f","projectNumber":"91397959616","displayName":"NBTI","name":"projects/nbti-37b3f","resources":{"hostingSite":"nbti-37b3f"},"state":"ACTIVE","etag":"1_9e4bf294-b9ce-4843-94c4-2c0e283b7830"}
+[info] 
+[info] === Deploying to 'nbti-37b3f'...
+[info] 
+[info] i  deploying firestore, hosting 
+[info] i  cloud.firestore: checking public/firestore.rules for compilation errors... 
+[debug] [2025-09-09T08:31:05.034Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:05.035Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:05.036Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/nbti-37b3f:test [none]
+[debug] [2025-09-09T08:31:05.037Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/nbti-37b3f:test [omitted]
+[debug] [2025-09-09T08:31:06.259Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/nbti-37b3f:test 200
+[debug] [2025-09-09T08:31:06.259Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/nbti-37b3f:test {}
+[info] ✔  cloud.firestore: rules file public/firestore.rules compiled successfully 
+[debug] [2025-09-09T08:31:06.263Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:06.264Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:06.264Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/nbti-37b3f/versions [none]
+[debug] [2025-09-09T08:31:06.264Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/nbti-37b3f/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2025-09-09T08:31:07.371Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/nbti-37b3f/versions 200
+[debug] [2025-09-09T08:31:07.371Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/nbti-37b3f/versions {"name":"projects/91397959616/sites/nbti-37b3f/versions/528c04518f0368f4","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2025-09-09T08:31:07.372Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:07.372Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:07.372Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/nbti-37b3f/databases/(default) [none]
+[debug] [2025-09-09T08:31:07.521Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/nbti-37b3f/databases/(default) 200
+[debug] [2025-09-09T08:31:07.521Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/nbti-37b3f/databases/(default) {"name":"projects/nbti-37b3f/databases/(default)","uid":"6a7f84f1-ed15-49e4-8531-ef5ab40cc55a","createTime":"2025-09-06T20:53:01.666423Z","updateTime":"2025-09-06T20:53:01.666423Z","locationId":"asia-northeast3","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2025-09-09T07:31:07.498507Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"v","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"etag":"IMnDkYGiy48DMKbp3smHxY8D"}
+[debug] [2025-09-09T08:31:07.523Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:07.523Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:07.523Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/nbti-37b3f/releases pageSize=10&pageToken=
+[debug] [2025-09-09T08:31:08.541Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/nbti-37b3f/releases 200
+[debug] [2025-09-09T08:31:08.541Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/nbti-37b3f/releases {"releases":[{"name":"projects/nbti-37b3f/releases/cloud.firestore","rulesetName":"projects/nbti-37b3f/rulesets/526dcc1c-1aa5-461d-8b5e-f1132d746a43","createTime":"2025-09-06T20:53:09.489782Z","updateTime":"2025-09-09T08:26:37.665833Z"}]}
+[debug] [2025-09-09T08:31:08.541Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:08.541Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:08.541Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/nbti-37b3f/rulesets/526dcc1c-1aa5-461d-8b5e-f1132d746a43 [none]
+[debug] [2025-09-09T08:31:09.565Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/nbti-37b3f/rulesets/526dcc1c-1aa5-461d-8b5e-f1132d746a43 200
+[debug] [2025-09-09T08:31:09.566Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/nbti-37b3f/rulesets/526dcc1c-1aa5-461d-8b5e-f1132d746a43 [omitted]
+[info] i  firestore: uploading rules public/firestore.rules... 
+[debug] [2025-09-09T08:31:09.566Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:09.566Z] Checked if tokens are valid: true, expires at: 1757410263344
+[debug] [2025-09-09T08:31:09.566Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/nbti-37b3f/rulesets [none]
+[debug] [2025-09-09T08:31:09.566Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/nbti-37b3f/rulesets [omitted]

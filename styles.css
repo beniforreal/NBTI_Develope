@@ -1935,7 +1935,7 @@ footer {
   }
   
   .posting-container {
-    margin: 0 16px;
+
   }
   
   .posting-header {
@@ -4431,8 +4431,6 @@ dialog {
 
 @media (max-width: 768px) {
   .wrap {
-    padding: 0 16px;
-    margin: 20px 0;
     padding-bottom: 80px; /* 하단 메뉴바 공간 확보 */
   }
   
@@ -4762,7 +4760,6 @@ dialog {
 
 @media (max-width: 480px) {
   .wrap {
-    padding: 0 12px;
     margin: 16px 0;
   }
   
