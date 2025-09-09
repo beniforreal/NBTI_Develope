@@ -377,7 +377,7 @@
           <div class="card-footer">
             <div class="post-meta">
               <span class="post-date">${fmtDate(it.updatedAt || it.createdAt)}</span>
-              ${isMultiImage ? `<span class="image-count"><i class="fa-solid fa-images"></i> ${imageUrls.length}</span>` : ''}
+              <span class="post-author">${utils.escapeHtml(authorName)}</span>
             </div>
           </div>`;
         grid.appendChild(card);

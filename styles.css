@@ -833,6 +833,12 @@ footer {
   color: var(--muted);
 }
 
+.post-author {
+  font-weight: 500;
+  color: var(--text);
+  display: none; /* 데스크톱에서는 숨김 */
+}
+
 .image-count {
   display: flex;
   align-items: center;
@@ -6029,6 +6035,15 @@ dialog {
   .detail-like-btn,
   .detail-share-btn {
     padding: 6px;
+  }
+  
+  /* 모바일에서 post-meta에 작성자 표시 */
+  .post-meta .post-author {
+    display: inline;
+  }
+  
+  .post-meta .image-count {
+    display: none;
   }
   
   .detail-like-btn i,
