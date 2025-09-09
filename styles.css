@@ -1854,7 +1854,7 @@ footer {
   background: var(--panel-2);
   border-top: 1px solid var(--border);
   margin-top: auto;
-  padding: 40px 0 20px;
+  padding: 40px 0 60px;
 }
 
 .footer-content {
@@ -1960,10 +1960,11 @@ footer {
     gap: 4px;
   }
   
-  /* 모바일 플로팅 버튼 */
+  /* 모바일 플로팅 버튼 - 하단 메뉴바 위에 위치 */
   .floating-post-btn {
-    bottom: 20px;
+    bottom: 90px; /* 하단 메뉴바 높이(80px) + 여백(10px) */
     right: 20px;
+    z-index: 1001; /* 하단 메뉴바보다 위에 표시 */
   }
   
   .floating-btn-link {
@@ -3749,9 +3750,8 @@ dialog {
 
 .logout-btn {
   background: var(--danger);
-  color: white;
+  color: #ff0000;
   border: none;
-  padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
@@ -4765,7 +4765,7 @@ dialog {
   }
   
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
     gap: 10px;
   }
   
@@ -4967,7 +4967,7 @@ dialog {
   
   .member-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 6px;
   }
 }
 
