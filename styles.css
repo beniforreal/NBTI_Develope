@@ -2124,8 +2124,8 @@ footer {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--panel-2);
-  border-top: 1px solid var(--border);
+  background: #f2f2f2;
+  border-top: 1px solid #e2e8f0;
   z-index: 1000;
   display: none;
   padding: 8px 0;
@@ -3756,7 +3756,7 @@ dialog {
 
 .logout-btn {
   background: var(--danger);
-  color: #ff0000;
+  color: #ff8888;
   border: none;
   border-radius: 6px;
   cursor: pointer;
