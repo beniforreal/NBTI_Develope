@@ -1960,11 +1960,11 @@ footer {
     gap: 4px;
   }
   
-  /* 모바일 플로팅 버튼 - 하단 메뉴바 위에 위치 */
+  /* 모바일 플로팅 버튼 - 하단 메뉴바 위쪽에 위치 */
   .floating-post-btn {
-    bottom: 90px; /* 하단 메뉴바 높이(80px) + 여백(10px) */
+    bottom: 100px; /* 하단 메뉴바 높이(80px) + 여백(20px) */
     right: 20px;
-    z-index: 1001; /* 하단 메뉴바보다 위에 표시 */
+    z-index: 1000; /* 하단 메뉴바와 동일한 z-index */
   }
   
   .floating-btn-link {
