@@ -67,14 +67,16 @@ class HeaderComponent {
             <button class="sidebar-close" id="sidebarClose">&times;</button>
           </div>
           <nav class="sidebar-nav">
-            <a href="picture.html" class="sidebar-link" data-page="picture">
-              <i class="fa-solid fa-camera" style="color: #ff6b9d;"></i>
-              <span>사진첩</span>
-            </a>
-            <a href="members.html" class="sidebar-link" data-page="members">
-              <i class="fa-solid fa-users" style="color: #4dabf7;"></i>
-              <span>길드원</span>
-            </a>
+            <div class="sidebar-main-nav">
+              <a href="picture.html" class="sidebar-link" data-page="picture">
+                <i class="fa-solid fa-camera" style="color: #ff6b9d;"></i>
+                <span>사진첩</span>
+              </a>
+              <a href="members.html" class="sidebar-link" data-page="members">
+                <i class="fa-solid fa-users" style="color: #4dabf7;"></i>
+                <span>길드원</span>
+              </a>
+            </div>
             <div class="sidebar-auth-buttons">
               <a href="#" class="sidebar-link login-btn" id="mobileLoginBtn" title="로그인" style="display: flex;">
                 <i class="fa-solid fa-right-to-bracket" style="color: #FFD43B;"></i>
