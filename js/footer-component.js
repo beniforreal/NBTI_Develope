@@ -31,7 +31,7 @@ class FooterComponent {
           <a href="./mypage.html">마이페이지</a>
         </div>
         <div class="footer-copyright">
-          <p>&copy; 2024 NBTI 길드. All rights reserved.</p>
+          <p>&copy; 2025 NBTI 길드. All rights reserved.</p>
         </div>
       </div>
     `;
