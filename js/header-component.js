@@ -6,6 +6,7 @@ class HeaderComponent {
 
   init() {
     this.createHeaderHTML();
+    this.createMobileBottomNav();
     this.attachEventListeners();
     this.checkAuthState();
     
@@ -58,33 +59,6 @@ class HeaderComponent {
           </div>
         </div>
 
-        <!-- 모바일 하단 고정 메뉴바 -->
-        <div class="mobile-bottom-nav" id="mobileBottomNav">
-          <a href="index.html" class="bottom-nav-link" data-page="index">
-            <i class="fa-solid fa-home"></i>
-            <span>홈</span>
-          </a>
-          <a href="picture.html" class="bottom-nav-link" data-page="picture">
-            <i class="fa-solid fa-camera"></i>
-            <span>모아보기</span>
-          </a>
-          <a href="members.html" class="bottom-nav-link" data-page="members">
-            <i class="fa-solid fa-users"></i>
-            <span>길드원</span>
-          </a>
-          <a href="#" class="bottom-nav-link auth-link login-btn" id="mobileLoginBtn" title="로그인" style="display: flex;">
-            <i class="fa-solid fa-right-to-bracket"></i>
-            <span>로그인</span>
-          </a>
-          <a href="mypage.html" class="bottom-nav-link auth-link mypage-btn" id="mobileMypageBtn" title="마이페이지" style="display: none;">
-            <i class="fa-solid fa-user"></i>
-            <span>마이페이지</span>
-          </a>
-          <a href="#" class="bottom-nav-link auth-link logout-btn" id="mobileLogoutBtn" title="로그아웃" style="display: none;">
-            <i class="fa-solid fa-sign-out-alt"></i>
-            <span>로그아웃</span>
-          </a>
-        </div>
       </header>
     `;
 
@@ -94,6 +68,45 @@ class HeaderComponent {
     }
 
     document.body.insertAdjacentHTML('afterbegin', headerHTML);
+  }
+
+  createMobileBottomNav() {
+    const existingBottomNav = document.querySelector('.mobile-bottom-nav');
+    if (existingBottomNav) {
+      existingBottomNav.remove();
+    }
+
+    const bottomNavHTML = `
+      <!-- 모바일 하단 고정 메뉴바 -->
+      <div class="mobile-bottom-nav" id="mobileBottomNav">
+        <a href="index.html" class="bottom-nav-link" data-page="index">
+          <i class="fa-solid fa-home"></i>
+          <span>홈</span>
+        </a>
+        <a href="picture.html" class="bottom-nav-link" data-page="picture">
+          <i class="fa-solid fa-camera"></i>
+          <span>모아보기</span>
+        </a>
+        <a href="members.html" class="bottom-nav-link" data-page="members">
+          <i class="fa-solid fa-users"></i>
+          <span>길드원</span>
+        </a>
+        <a href="#" class="bottom-nav-link auth-link login-btn" id="mobileLoginBtn" title="로그인" style="display: flex;">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>로그인</span>
+        </a>
+        <a href="mypage.html" class="bottom-nav-link auth-link mypage-btn" id="mobileMypageBtn" title="마이페이지" style="display: none;">
+          <i class="fa-solid fa-user"></i>
+          <span>마이페이지</span>
+        </a>
+        <a href="#" class="bottom-nav-link auth-link logout-btn" id="mobileLogoutBtn" title="로그아웃" style="display: none;">
+          <i class="fa-solid fa-sign-out-alt"></i>
+          <span>로그아웃</span>
+        </a>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', bottomNavHTML);
   }
 
   attachEventListeners() {

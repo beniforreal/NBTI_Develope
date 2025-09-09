@@ -4441,6 +4441,11 @@ dialog {
     display: flex;
   }
   
+  /* 모바일에서 기존 헤더 숨김 */
+  .main-header {
+    display: none;
+  }
+  
   header {
     flex-direction: column;
     gap: 12px;
