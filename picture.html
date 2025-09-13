@@ -1305,7 +1305,8 @@
         
         if (result.success) {
           commentInput.value = '';
-          await loadComments(currentPostId);
+          // 실시간으로 댓글 목록에 새 댓글 추가
+          await addCommentToDisplay(commentData);
       } else {
           alert('댓글 작성에 실패했습니다: ' + result.error);
         }
@@ -1323,13 +1324,51 @@
         const result = await firebaseDataManager.deleteComment(commentId);
         
         if (result.success) {
-          await loadComments(currentPostId);
+          // 실시간으로 댓글 목록에서 삭제
+          removeCommentFromDisplay(commentId);
         } else {
           alert('댓글 삭제에 실패했습니다: ' + result.error);
         }
       } catch (error) {
         alert('댓글 삭제 중 오류가 발생했습니다.');
       }
+    }
+
+    // 실시간으로 새 댓글을 화면에 추가하는 함수
+    async function addCommentToDisplay(commentData) {
+      const commentsList = document.getElementById('commentsList');
+      const showMoreBtn = document.getElementById('showMoreCommentsBtn');
+      
+      // 새 댓글 객체 생성 (임시 ID와 현재 시간 사용)
+      const newComment = {
+        id: 'temp_' + Date.now(),
+        ...commentData,
+        createdAt: new Date()
+      };
+      
+      // currentComments 배열에 새 댓글 추가
+      currentComments.unshift(newComment);
+      
+      // 화면을 다시 렌더링
+      displayComments();
+      
+      // 백그라운드에서 실제 댓글 데이터 다시 로드 (동기화)
+      setTimeout(async () => {
+        try {
+          await loadComments(currentPostId);
+        } catch (error) {
+          // 동기화 실패 시 무시
+        }
+      }, 500);
+    }
+
+    // 실시간으로 댓글을 화면에서 제거하는 함수
+    function removeCommentFromDisplay(commentId) {
+      // currentComments 배열에서 해당 댓글 제거
+      currentComments = currentComments.filter(comment => comment.id !== commentId);
+      
+      // 화면을 다시 렌더링
+      displayComments();
     }
 
     // 댓글 입력 이벤트 리스너
