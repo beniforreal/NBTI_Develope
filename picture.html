@@ -372,6 +372,21 @@
     let currentComments = [];
     let currentImageIndex = 0;
     let totalImages = 0;
+    
+    // 터치 스와이프 관련 변수
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let isSwipeEnabled = true;
+    
+    // 터치 이벤트 리스너 정리 함수
+    function cleanupTouchListeners() {
+      const imageCarouselContainer = document.querySelector('.image-carousel-container');
+      if (imageCarouselContainer) {
+        imageCarouselContainer.removeEventListener('touchstart', handleTouchStart);
+        imageCarouselContainer.removeEventListener('touchmove', handleTouchMove);
+        imageCarouselContainer.removeEventListener('touchend', handleTouchEnd);
+      }
+    }
 
     async function loadPhotos(){
       try{ 
@@ -948,6 +963,20 @@
       // 이미지 인디케이터 생성
       createImageIndicators(imageUrls.length);
       
+      // 터치 스와이프 이벤트 리스너 추가
+      const imageCarouselContainer = document.querySelector('.image-carousel-container');
+      if (imageCarouselContainer) {
+        // 기존 이벤트 리스너 제거 (중복 방지)
+        imageCarouselContainer.removeEventListener('touchstart', handleTouchStart);
+        imageCarouselContainer.removeEventListener('touchmove', handleTouchMove);
+        imageCarouselContainer.removeEventListener('touchend', handleTouchEnd);
+        
+        // 새로운 이벤트 리스너 추가
+        imageCarouselContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+        imageCarouselContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+        imageCarouselContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
+      }
+      
       const tagsContainer = document.getElementById('tagsContent');
       if (!tagsContainer) {
         console.warn('tagsContent 요소를 찾을 수 없습니다.');
@@ -1034,6 +1063,8 @@
     detailClose.onclick = () => {
       detailModal.style.display = 'none';
       updateUploadButtonVisibility();
+      cleanupTouchListeners();
+      
       // URL에서 id 파라미터 제거
       const url = new URL(window.location);
       url.searchParams.delete('id');
@@ -1044,6 +1075,8 @@
       if (e.target === detailModal) {
         detailModal.style.display = 'none';
         updateUploadButtonVisibility();
+        cleanupTouchListeners();
+        
         // URL에서 id 파라미터 제거
         const url = new URL(window.location);
         url.searchParams.delete('id');
@@ -1055,6 +1088,8 @@
       if (e.key === 'Escape' && detailModal.style.display === 'flex') {
         detailModal.style.display = 'none';
         updateUploadButtonVisibility();
+        cleanupTouchListeners();
+        
         // URL에서 id 파라미터 제거
         const url = new URL(window.location);
         url.searchParams.delete('id');
@@ -1450,6 +1485,51 @@
     function prevImage() {
       const prevIndex = (currentImageIndex - 1 + totalImages) % totalImages;
       goToImage(prevIndex);
+    }
+
+    // 터치 스와이프 이벤트 핸들러들
+    function handleTouchStart(e) {
+      if (!isSwipeEnabled || totalImages <= 1) return;
+      
+      touchStartX = e.touches[0].clientX;
+    }
+
+    function handleTouchMove(e) {
+      if (!isSwipeEnabled || totalImages <= 1) return;
+      
+      // 기본 스크롤 동작 방지 (세로 스크롤은 허용)
+      const touchY = e.touches[0].clientY;
+      const touchX = e.touches[0].clientX;
+      
+      // 수평 스와이프인지 확인 (수직 스크롤과 구분)
+      const deltaX = Math.abs(touchX - touchStartX);
+      const deltaY = Math.abs(touchY - (e.touches[0].clientY || 0));
+      
+      if (deltaX > deltaY) {
+        e.preventDefault(); // 수평 스와이프일 때만 기본 동작 방지
+      }
+    }
+
+    function handleTouchEnd(e) {
+      if (!isSwipeEnabled || totalImages <= 1) return;
+      
+      touchEndX = e.changedTouches[0].clientX;
+      handleSwipe();
+    }
+
+    function handleSwipe() {
+      const swipeThreshold = 50; // 최소 스와이프 거리
+      const swipeDistance = touchStartX - touchEndX;
+      
+      if (Math.abs(swipeDistance) > swipeThreshold) {
+        if (swipeDistance > 0) {
+          // 왼쪽으로 스와이프 (다음 이미지)
+          nextImage();
+        } else {
+          // 오른쪽으로 스와이프 (이전 이미지)
+          prevImage();
+        }
+      }
     }
 
     // 좋아요 개수 표시 업데이트
