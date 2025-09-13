@@ -82,11 +82,11 @@
           <button class="create-post-btn" id="createPostBtn" title="새 포스팅">
             <i class="fa-solid fa-plus"></i>
             <span>사진 업로드하기</span>
-          </button>
+        </button>
           <div class="search">
             <input id="q" placeholder="태그 입력">
             <i class="fa-solid fa-magnifying-glass"></i>
-          </div>
+      </div>
         </div>
       </div>
     </div>
@@ -115,8 +115,8 @@
             <input type="file" id="file" accept="image/*" multiple style="display: none;">
         </div>
           <div class="image-preview-container" id="imagePreviewContainer"></div>
-      </div>
-        
+  </div>
+
         <!-- 텍스트 작성 영역 -->
         <div class="text-input-section">
           <div class="author-info">
@@ -136,11 +136,11 @@
           <div class="option-row">
             <label for="location">위치</label>
             <input type="text" id="location" placeholder="위치 추가 (선택사항)">
-          </div>
+        </div>
           <div class="option-row">
             <label for="tags">태그</label>
             <input type="text" id="tags" placeholder="태그를 입력하세요 (예: #길드 #모임)">
-          </div>
+        </div>
         </div>
       </div>
       
@@ -173,20 +173,33 @@
           </div>
           </div>
       
-      <!-- 이미지 스크롤 영역 -->
+      <!-- 이미지 캐러셀 영역 -->
       <div class="detail-images" id="detailImages">
-        <!-- 이미지들이 여기에 동적으로 추가됩니다 -->
-        
-        <!-- 이미지 인디케이터 -->
-        <div class="image-indicators" id="imageIndicators">
-          <!-- 이미지 개수 표시 동그라미들이 여기에 생성됩니다 -->
+        <!-- 이미지 컨테이너 -->
+        <div class="image-carousel-container">
+          <div class="image-carousel" id="imageCarousel">
+            <!-- 이미지들이 여기에 동적으로 추가됩니다 -->
+          </div>
+          
+          <!-- 이전/다음 버튼 -->
+          <button class="carousel-btn carousel-prev" id="carouselPrev" style="display: none;">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <button class="carousel-btn carousel-next" id="carouselNext" style="display: none;">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+          
+          <!-- 이미지 인디케이터 -->
+          <div class="image-indicators" id="imageIndicators">
+            <!-- 이미지 개수 표시 동그라미들이 여기에 생성됩니다 -->
+          </div>
         </div>
         
         <!-- 좋아요 애니메이션 하트들 -->
         <div class="like-animation-container" id="likeAnimationContainer">
           <!-- 애니메이션 하트들이 여기에 생성됩니다 -->
-          </div>
-          </div>
+        </div>
+      </div>
       
             <!-- 인스타그램 스타일 하단 영역 -->
       <div class="instagram-style-bottom">
@@ -343,6 +356,8 @@
     let currentPostLikes = [];
     let userLikedPosts = new Set();
     let currentComments = [];
+    let currentImageIndex = 0;
+    let totalImages = 0;
 
     async function loadPhotos(){
       try{ 
@@ -402,8 +417,8 @@
                 <div class="tags-preview">
                   ${(it.tags||[]).slice(0,3).map(t=>`<span class="tag-pill">${utils.escapeHtml(t)}</span>`).join("")}
                   ${(it.tags||[]).length > 3 ? `<span class="more-tags">+${(it.tags||[]).length - 3}</span>` : ''}
-                </div>
-              </div>
+            </div>
+            </div>
               <div class="overlay-right">
                 <div class="author-info-overlay">
                   <span class="author-name-overlay">${utils.escapeHtml(authorName)}</span>
@@ -447,12 +462,12 @@
           if (confirm(`정말로 '${item.title}'을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
             try {
               const success = await firebaseDataManager.deletePhoto(id);
-              if (success) {
-                await render(q.value);
+                if (success) {
+                  await render(q.value);
                 alert('사진이 삭제되었습니다.');
-              } else {
-                alert('삭제에 실패했습니다.');
-              }
+                } else {
+                  alert('삭제에 실패했습니다.');
+                }
             } catch (error) {
               // console.error('삭제 오류:', error);
               alert('삭제 중 오류가 발생했습니다.');
@@ -530,7 +545,7 @@
         
         if (recentNotices.length === 0) {
           noticeSnippetList.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 20px;">등록된 공지사항이 없습니다.</p>';
-        } else {
+          } else {
           for (const notice of recentNotices) {
             const noticeItem = await createNoticeSnippetItem(notice);
             noticeSnippetList.appendChild(noticeItem);
@@ -606,7 +621,7 @@
         setTimeout(() => {
           openDetailWithRetry(photoId, retryCount + 1);
         }, 1000);
-      } else {
+              } else {
         // 최대 재시도 횟수에 도달한 경우 일반 피드로 이동
         alert('포스팅을 찾을 수 없습니다. 피드로 이동합니다.');
         const url = new URL(window.location);
@@ -865,7 +880,7 @@
       const items = await loadPhotos();
       const item = items.find(it => it.id === id);
       if (!item) return;
-      
+
       currentPostId = id;
 
       // DB에서 작성자 이름 가져오기
@@ -887,18 +902,34 @@
       document.getElementById('detailPostDate').textContent = fmtDate(item.updatedAt || item.createdAt);
       
       const imageUrls = item.urls || (item.url ? [item.url] : []);
-      const detailImages = document.getElementById('detailImages');
+      const imageCarousel = document.getElementById('imageCarousel');
+      const carouselPrev = document.getElementById('carouselPrev');
+      const carouselNext = document.getElementById('carouselNext');
       
-      detailImages.innerHTML = '';
+      // 캐러셀 초기화
+      currentImageIndex = 0;
+      totalImages = imageUrls.length;
+      
+      imageCarousel.innerHTML = '';
       
       imageUrls.forEach((url, index) => {
         const imageContainer = document.createElement('div');
-        imageContainer.className = 'detail-image-item';
+        imageContainer.className = 'carousel-image-item';
+        imageContainer.style.display = index === 0 ? 'block' : 'none';
         imageContainer.innerHTML = `
           <img src="${url}" alt="이미지 ${index + 1}" loading="lazy">
         `;
-        detailImages.appendChild(imageContainer);
+        imageCarousel.appendChild(imageContainer);
       });
+      
+      // 캐러셀 버튼 표시/숨김
+      if (totalImages > 1) {
+        carouselPrev.style.display = 'flex';
+        carouselNext.style.display = 'flex';
+      } else {
+        carouselPrev.style.display = 'none';
+        carouselNext.style.display = 'none';
+      }
       
       // 이미지 인디케이터 생성
       createImageIndicators(imageUrls.length);
@@ -917,7 +948,7 @@
         item.tags.forEach((tag, index) => {
           const tagEl = document.createElement('span');
           tagEl.className = 'tag-item';
-          tagEl.textContent = `#${tag}`;
+          tagEl.textContent = tag.startsWith('#') ? tag : `#${tag}`;
           if (index >= maxVisibleTags) {
             tagEl.style.display = 'none';
             tagEl.classList.add('hidden-tag');
@@ -1019,6 +1050,10 @@
     // 좋아요/공유 버튼 이벤트 리스너
     document.getElementById('detailLikeBtn').addEventListener('click', handleLikeClick);
     document.getElementById('detailShareBtn').addEventListener('click', handleShareClick);
+
+    // 캐러셀 버튼 이벤트 리스너
+    document.getElementById('carouselPrev').addEventListener('click', prevImage);
+    document.getElementById('carouselNext').addEventListener('click', nextImage);
 
     // 댓글 관련 함수들
     async function loadComments(postId) {
@@ -1144,7 +1179,7 @@
         if (result.success) {
           commentInput.value = '';
           await loadComments(currentPostId);
-        } else {
+      } else {
           alert('댓글 작성에 실패했습니다: ' + result.error);
         }
       } catch (error) {
@@ -1193,9 +1228,42 @@
           const indicator = document.createElement('div');
           indicator.className = 'image-indicator';
           if (i === 0) indicator.classList.add('active');
+          indicator.addEventListener('click', () => goToImage(i));
           indicatorsContainer.appendChild(indicator);
         }
       }
+    }
+
+    // 캐러셀 네비게이션 함수들
+    function goToImage(index) {
+      if (index < 0 || index >= totalImages) return;
+      
+      const imageItems = document.querySelectorAll('.carousel-image-item');
+      const indicators = document.querySelectorAll('.image-indicator');
+      
+      // 모든 이미지 숨기기
+      imageItems.forEach(item => item.style.display = 'none');
+      indicators.forEach(indicator => indicator.classList.remove('active'));
+      
+      // 선택된 이미지 표시
+      if (imageItems[index]) {
+        imageItems[index].style.display = 'block';
+      }
+      if (indicators[index]) {
+        indicators[index].classList.add('active');
+      }
+      
+      currentImageIndex = index;
+    }
+
+    function nextImage() {
+      const nextIndex = (currentImageIndex + 1) % totalImages;
+      goToImage(nextIndex);
+    }
+
+    function prevImage() {
+      const prevIndex = (currentImageIndex - 1 + totalImages) % totalImages;
+      goToImage(prevIndex);
     }
 
     // 좋아요 개수 표시 업데이트
