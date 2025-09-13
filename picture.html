@@ -247,15 +247,14 @@
           </div>
         </div>
         
-        
-        <!-- 태그 영역 -->
-
-        
         <!-- 댓글 목록 영역 -->
         <div class="comments-section" id="commentsSection">
           <div class="comments-list" id="commentsList">
             <!-- 댓글들이 여기에 동적으로 추가됩니다 -->
           </div>
+          <button class="show-more-comments-btn" id="showMoreCommentsBtn" style="display: none;">
+            <span>댓글 더보기</span>
+          </button>
         </div>
         
         <!-- 댓글 입력 영역 -->
@@ -1166,6 +1165,7 @@
     async function loadComments(postId) {
       try {
         currentComments = await firebaseDataManager.loadComments(postId);
+        console.log('댓글 로드됨:', currentComments.length, '개');
         displayComments();
       } catch (error) {
         // console.error('댓글 로드 실패:', error);
@@ -1174,20 +1174,40 @@
 
     function displayComments() {
       const commentsList = document.getElementById('commentsList');
-      const commentCount = document.getElementById('commentCount');
+      const showMoreBtn = document.getElementById('showMoreCommentsBtn');
       
       commentsList.innerHTML = '';
-      commentCount.textContent = currentComments.length;
       
       if (currentComments.length === 0) {
         commentsList.innerHTML = '<p class="no-comments">아직 댓글이 없습니다.</p>';
+        showMoreBtn.style.display = 'none';
         return;
       }
       
-      currentComments.forEach(comment => {
+      const maxVisibleComments = 3;
+      const visibleComments = currentComments.slice(0, maxVisibleComments);
+      const hiddenComments = currentComments.slice(maxVisibleComments);
+      
+      // 처음 3개 댓글만 표시
+      visibleComments.forEach(comment => {
         const commentElement = createCommentElement(comment);
         commentsList.appendChild(commentElement);
       });
+      
+      // 숨겨진 댓글이 있으면 더보기 버튼 표시
+      if (hiddenComments.length > 0) {
+        showMoreBtn.style.display = 'block';
+        showMoreBtn.onclick = () => {
+          // 숨겨진 댓글들을 모두 표시
+          hiddenComments.forEach(comment => {
+            const commentElement = createCommentElement(comment);
+            commentsList.appendChild(commentElement);
+          });
+          showMoreBtn.style.display = 'none';
+        };
+      } else {
+        showMoreBtn.style.display = 'none';
+      }
     }
 
     function createCommentElement(comment) {
