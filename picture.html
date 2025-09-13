@@ -1164,6 +1164,7 @@
     // 댓글 관련 함수들
     async function loadComments(postId) {
       try {
+        console.log('댓글 로드 시작, postId:', postId);
         currentComments = await firebaseDataManager.loadComments(postId);
         console.log('댓글 로드됨:', currentComments.length, '개', currentComments);
         displayComments();
@@ -1309,7 +1310,9 @@
           userEmail: currentUser.email
         };
         
+        console.log('댓글 추가 시도, postId:', currentPostId, 'commentData:', commentData);
         const result = await firebaseDataManager.addComment(currentPostId, commentData);
+        console.log('댓글 추가 결과:', result);
         
         if (result.success) {
           commentInput.value = '';

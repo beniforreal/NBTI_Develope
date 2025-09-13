@@ -1297,8 +1297,7 @@ class FirebaseDataManager {
       const commentsRef = collection(this.db, 'comments');
       const q = query(
         commentsRef, 
-        where('postId', '==', postId),
-        orderBy('createdAt', 'asc')
+        where('postId', '==', postId)
       );
       const querySnapshot = await getDocs(q);
       
@@ -1310,8 +1309,16 @@ class FirebaseDataManager {
         });
       });
       
+      // JavaScript에서 정렬 (createdAt 오름차순)
+      comments.sort((a, b) => {
+        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return aTime - bTime;
+      });
+      
       return comments;
     } catch (error) {
+      console.error('댓글 로드 오류:', error);
       return [];
     }
   }

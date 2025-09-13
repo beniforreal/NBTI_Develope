@@ -51,8 +51,7 @@ service cloud.firestore {
       allow read: if true;
       // 인증된 사용자만 댓글 작성 가능
       allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.userId &&
-        request.resource.data.keys().hasAll(['postId', 'content', 'author', 'userId', 'userEmail', 'createdAt', 'updatedAt']);
+        request.auth.uid == request.resource.data.userId;
       // 댓글 작성자 또는 관리자만 수정/삭제 가능
       allow update, delete: if request.auth != null && 
         (resource.data.userId == request.auth.uid || 
