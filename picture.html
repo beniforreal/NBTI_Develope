@@ -1165,10 +1165,10 @@
     async function loadComments(postId) {
       try {
         currentComments = await firebaseDataManager.loadComments(postId);
-        console.log('댓글 로드됨:', currentComments.length, '개');
+        console.log('댓글 로드됨:', currentComments.length, '개', currentComments);
         displayComments();
       } catch (error) {
-        // console.error('댓글 로드 실패:', error);
+        console.error('댓글 로드 실패:', error);
       }
     }
 
@@ -1185,29 +1185,37 @@
       }
       
       const maxVisibleComments = 3;
-      const visibleComments = currentComments.slice(0, maxVisibleComments);
-      const hiddenComments = currentComments.slice(maxVisibleComments);
       
-      // 처음 3개 댓글만 표시
+      // 댓글이 3개 이하인 경우 모든 댓글 표시
+      if (currentComments.length <= maxVisibleComments) {
+        currentComments.forEach(comment => {
+          const commentElement = createCommentElement(comment);
+          commentsList.appendChild(commentElement);
+        });
+        showMoreBtn.style.display = 'none';
+        return;
+      }
+      
+      // 댓글이 4개 이상인 경우: 최신 3개만 표시하고 나머지는 더보기
+      const visibleComments = currentComments.slice(-maxVisibleComments); // 최신 3개
+      const hiddenComments = currentComments.slice(0, -maxVisibleComments); // 나머지
+      
+      // 최신 3개 댓글 표시
       visibleComments.forEach(comment => {
         const commentElement = createCommentElement(comment);
         commentsList.appendChild(commentElement);
       });
       
-      // 숨겨진 댓글이 있으면 더보기 버튼 표시
-      if (hiddenComments.length > 0) {
-        showMoreBtn.style.display = 'block';
-        showMoreBtn.onclick = () => {
-          // 숨겨진 댓글들을 모두 표시
-          hiddenComments.forEach(comment => {
-            const commentElement = createCommentElement(comment);
-            commentsList.appendChild(commentElement);
-          });
-          showMoreBtn.style.display = 'none';
-        };
-      } else {
+      // 더보기 버튼 표시
+      showMoreBtn.style.display = 'block';
+      showMoreBtn.onclick = () => {
+        // 숨겨진 댓글들을 맨 위에 표시
+        hiddenComments.forEach(comment => {
+          const commentElement = createCommentElement(comment);
+          commentsList.insertBefore(commentElement, commentsList.firstChild);
+        });
         showMoreBtn.style.display = 'none';
-      }
+      };
     }
 
     function createCommentElement(comment) {
@@ -1336,8 +1344,8 @@
 
     // 실시간으로 새 댓글을 화면에 추가하는 함수
     async function addCommentToDisplay(commentData) {
-      const commentsList = document.getElementById('commentsList');
-      const showMoreBtn = document.getElementById('showMoreCommentsBtn');
+      console.log('댓글 추가 시작:', commentData);
+      console.log('현재 댓글 수:', currentComments.length);
       
       // 새 댓글 객체 생성 (임시 ID와 현재 시간 사용)
       const newComment = {
@@ -1346,8 +1354,9 @@
         createdAt: new Date()
       };
       
-      // currentComments 배열에 새 댓글 추가
-      currentComments.unshift(newComment);
+      // currentComments 배열에 새 댓글 추가 (맨 뒤에 추가 - 최신 댓글이 아래에 오도록)
+      currentComments.push(newComment);
+      console.log('임시 댓글 추가 후:', currentComments.length, '개');
       
       // 화면을 다시 렌더링
       displayComments();
@@ -1355,11 +1364,16 @@
       // 백그라운드에서 실제 댓글 데이터 다시 로드 (동기화)
       setTimeout(async () => {
         try {
-          await loadComments(currentPostId);
+          console.log('실제 댓글 데이터 동기화 시작...');
+          // 임시 댓글을 제거하고 실제 데이터로 교체
+          const realComments = await firebaseDataManager.loadComments(currentPostId);
+          console.log('실제 댓글 데이터:', realComments.length, '개', realComments);
+          currentComments = realComments;
+          displayComments();
         } catch (error) {
-          // 동기화 실패 시 무시
+          console.error('동기화 실패:', error);
         }
-      }, 500);
+      }, 1000);
     }
 
     // 실시간으로 댓글을 화면에서 제거하는 함수
