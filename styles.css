@@ -2087,8 +2087,13 @@ footer {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 4px 0;
+  padding: 8px 0;
   font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
 }
 
 .comment-content {

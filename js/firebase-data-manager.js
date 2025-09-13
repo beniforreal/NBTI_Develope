@@ -688,18 +688,22 @@ class FirebaseDataManager {
   /**
    * 길드원 데이터 로드 (승인된 멤버만)
    */
-  async loadMembers() {
+  async loadMembers(limit = 100) {
     try {
       const membersRef = collection(this.db, 'members');
       const q = query(membersRef, where('status', '==', 'approved'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
       
       const members = [];
+      let count = 0;
       querySnapshot.forEach((doc) => {
-        members.push({
-          id: doc.id,
-          ...doc.data()
-        });
+        if (count < limit) {
+          members.push({
+            id: doc.id,
+            ...doc.data()
+          });
+          count++;
+        }
       });
       
       // 우선순위에 따른 정렬
@@ -752,18 +756,22 @@ class FirebaseDataManager {
   /**
    * 모든 멤버 데이터 로드 (승인/미승인 포함, 관리자용)
    */
-  async loadAllMembers() {
+  async loadAllMembers(limit = 150) {
     try {
       const membersRef = collection(this.db, 'members');
       const q = query(membersRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
       
       const members = [];
+      let count = 0;
       querySnapshot.forEach((doc) => {
-        members.push({
-          id: doc.id,
-          ...doc.data()
-        });
+        if (count < limit) {
+          members.push({
+            id: doc.id,
+            ...doc.data()
+          });
+          count++;
+        }
       });
       
       // 우선순위에 따른 정렬
@@ -872,18 +880,22 @@ class FirebaseDataManager {
   /**
    * 사진 데이터 로드
    */
-  async loadPhotos() {
+  async loadPhotos(limit = 200) {
     try {
       const photosRef = collection(this.db, 'photos');
       const q = query(photosRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
       
       const photos = [];
+      let count = 0;
       querySnapshot.forEach((doc) => {
-        photos.push({
-          id: doc.id,
-          ...doc.data()
-        });
+        if (count < limit) {
+          photos.push({
+            id: doc.id,
+            ...doc.data()
+          });
+          count++;
+        }
       });
       
       // console.log('사진 데이터 로드 완료:', photos.length, '장');
@@ -1165,18 +1177,22 @@ class FirebaseDataManager {
   }
 
   // 공지사항 관련 함수들
-  async loadNotices() {
+  async loadNotices(limit = 50) {
     try {
       const noticesRef = collection(this.db, 'notices');
       const q = query(noticesRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
       
       const notices = [];
+      let count = 0;
       querySnapshot.forEach((doc) => {
-        notices.push({
-          id: doc.id,
-          ...doc.data()
-        });
+        if (count < limit) {
+          notices.push({
+            id: doc.id,
+            ...doc.data()
+          });
+          count++;
+        }
       });
       
       return notices;
@@ -1333,7 +1349,7 @@ class FirebaseDataManager {
     }
   }
 
-  async loadUserComments(userId) {
+  async loadUserComments(userId, limit = 50) {
     try {
       const commentsRef = collection(this.db, 'comments');
       const q = query(
@@ -1344,11 +1360,15 @@ class FirebaseDataManager {
       const querySnapshot = await getDocs(q);
       
       const comments = [];
+      let count = 0;
       querySnapshot.forEach((doc) => {
-        comments.push({
-          id: doc.id,
-          ...doc.data()
-        });
+        if (count < limit) {
+          comments.push({
+            id: doc.id,
+            ...doc.data()
+          });
+          count++;
+        }
       });
       
       return comments;
@@ -1357,7 +1377,7 @@ class FirebaseDataManager {
     }
   }
 
-  async loadUserPosts(userId) {
+  async loadUserPosts(userId, limit = 100) {
     try {
       const photosRef = collection(this.db, 'photos');
       const q = query(
@@ -1368,11 +1388,15 @@ class FirebaseDataManager {
       const querySnapshot = await getDocs(q);
       
       const posts = [];
+      let count = 0;
       querySnapshot.forEach((doc) => {
-        posts.push({
-          id: doc.id,
-          ...doc.data()
-        });
+        if (count < limit) {
+          posts.push({
+            id: doc.id,
+            ...doc.data()
+          });
+          count++;
+        }
       });
       
       return posts;
@@ -1397,24 +1421,33 @@ class FirebaseDataManager {
         likedPostIds.push(data.postId);
       });
       
-      // 좋아요한 포스트들의 상세 정보 가져오기
+      // 좋아요한 포스트들의 상세 정보 가져오기 (최대 20개로 제한)
       if (likedPostIds.length === 0) return [];
       
-      const photosRef = collection(this.db, 'photos');
+      // 과도한 DB 읽기 방지를 위해 최대 20개까지만 처리
+      const limitedPostIds = likedPostIds.slice(0, 20);
       const posts = [];
       
-      for (const postId of likedPostIds) {
-        const postRef = doc(this.db, 'photos', postId);
-        const postSnap = await getDoc(postRef);
-        if (postSnap.exists()) {
-          posts.push({
-            id: postSnap.id,
-            ...postSnap.data()
-          });
+      // 병렬 처리로 성능 최적화
+      const postPromises = limitedPostIds.map(async (postId) => {
+        try {
+          const postRef = doc(this.db, 'photos', postId);
+          const postSnap = await getDoc(postRef);
+          if (postSnap.exists()) {
+            return {
+              id: postSnap.id,
+              ...postSnap.data()
+            };
+          }
+        } catch (error) {
+          // 개별 포스트 로드 실패 시 무시
         }
-      }
+        return null;
+      });
       
-      return posts;
+      const results = await Promise.all(postPromises);
+      return results.filter(post => post !== null);
+      
     } catch (error) {
       return [];
     }

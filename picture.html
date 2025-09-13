@@ -991,6 +991,7 @@
       await updateLikeDisplay();
 
       // 댓글 로드
+      visibleCommentCount = 3; // 댓글 표시 수 초기화
       await loadComments(id);
 
       const canDelete = isAdmin || (currentUser && item.uploadedBy === currentUser.uid);
@@ -1173,6 +1174,9 @@
       }
     }
 
+    let visibleCommentCount = 3; // 현재 표시된 댓글 수
+    const commentsPerPage = 3; // 한 번에 더 보여줄 댓글 수
+
     function displayComments() {
       const commentsList = document.getElementById('commentsList');
       const showMoreBtn = document.getElementById('showMoreCommentsBtn');
@@ -1182,41 +1186,30 @@
       if (currentComments.length === 0) {
         commentsList.innerHTML = '<p class="no-comments">아직 댓글이 없습니다.</p>';
         showMoreBtn.style.display = 'none';
+        visibleCommentCount = 3; // 초기화
         return;
       }
       
-      const maxVisibleComments = 3;
+      // 표시할 댓글 수 계산 (최신 댓글부터)
+      const commentsToShow = Math.min(visibleCommentCount, currentComments.length);
+      const visibleComments = currentComments.slice(-commentsToShow);
       
-      // 댓글이 3개 이하인 경우 모든 댓글 표시
-      if (currentComments.length <= maxVisibleComments) {
-        currentComments.forEach(comment => {
-          const commentElement = createCommentElement(comment);
-          commentsList.appendChild(commentElement);
-        });
-        showMoreBtn.style.display = 'none';
-        return;
-      }
-      
-      // 댓글이 4개 이상인 경우: 최신 3개만 표시하고 나머지는 더보기
-      const visibleComments = currentComments.slice(-maxVisibleComments); // 최신 3개
-      const hiddenComments = currentComments.slice(0, -maxVisibleComments); // 나머지
-      
-      // 최신 3개 댓글 표시
+      // 댓글 표시
       visibleComments.forEach(comment => {
         const commentElement = createCommentElement(comment);
         commentsList.appendChild(commentElement);
       });
       
-      // 더보기 버튼 표시
-      showMoreBtn.style.display = 'block';
-      showMoreBtn.onclick = () => {
-        // 숨겨진 댓글들을 맨 위에 표시
-        hiddenComments.forEach(comment => {
-          const commentElement = createCommentElement(comment);
-          commentsList.insertBefore(commentElement, commentsList.firstChild);
-        });
+      // 더보기 버튼 표시/숨김 처리
+      if (visibleCommentCount < currentComments.length) {
+        showMoreBtn.style.display = 'block';
+        showMoreBtn.onclick = () => {
+          visibleCommentCount += commentsPerPage;
+          displayComments(); // 재귀 호출로 다시 렌더링
+        };
+      } else {
         showMoreBtn.style.display = 'none';
-      };
+      }
     }
 
     function createCommentElement(comment) {
@@ -1361,6 +1354,9 @@
       currentComments.push(newComment);
       console.log('임시 댓글 추가 후:', currentComments.length, '개');
       
+      // 새 댓글이 추가되면 표시할 댓글 수를 늘림 (최신 댓글을 보여주기 위해)
+      visibleCommentCount = Math.max(visibleCommentCount, Math.min(3, currentComments.length));
+      
       // 화면을 다시 렌더링
       displayComments();
       
@@ -1372,6 +1368,7 @@
           const realComments = await firebaseDataManager.loadComments(currentPostId);
           console.log('실제 댓글 데이터:', realComments.length, '개', realComments);
           currentComments = realComments;
+          // 실제 데이터로 교체할 때는 표시할 댓글 수를 유지
           displayComments();
         } catch (error) {
           console.error('동기화 실패:', error);
