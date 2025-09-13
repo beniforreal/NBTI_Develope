@@ -177,29 +177,69 @@
       <div class="detail-images" id="detailImages">
         <!-- 이미지들이 여기에 동적으로 추가됩니다 -->
         
+        <!-- 이미지 인디케이터 -->
+        <div class="image-indicators" id="imageIndicators">
+          <!-- 이미지 개수 표시 동그라미들이 여기에 생성됩니다 -->
+        </div>
+        
         <!-- 좋아요 애니메이션 하트들 -->
         <div class="like-animation-container" id="likeAnimationContainer">
           <!-- 애니메이션 하트들이 여기에 생성됩니다 -->
-        </div>
+          </div>
           </div>
       
-      <!-- 태그 영역 -->
-      <div class="detail-tags" id="detailTags">
-        <div class="detail-tags-content">
-          <!-- 태그들이 여기에 표시됩니다 -->
-        </div>
-        
-        <!-- 좋아요/공유 버튼 영역 -->
-        <div class="detail-actions">
+            <!-- 인스타그램 스타일 하단 영역 -->
+      <div class="instagram-style-bottom">
+        <!-- 상호작용 버튼들 (좋아요, 댓글, 공유) -->
+        <div class="interaction-buttons">
           <button class="detail-like-btn" id="detailLikeBtn">
             <i class="fa-regular fa-heart"></i>
-            <span class="like-count" id="likeCount">0</span>
+          </button>
+          <button class="comment-btn" id="commentBtn">
+            <i class="fa-regular fa-comment"></i>
           </button>
           <button class="detail-share-btn" id="detailShareBtn">
-            <i class="fa-solid fa-share"></i>
+            <i class="fa-regular fa-paper-plane"></i>
+          </button>
+          <div class="spacer"></div>
+          <button class="bookmark-btn" id="bookmarkBtn">
+            <i class="fa-regular fa-bookmark"></i>
           </button>
         </div>
+        
+        <!-- 좋아요 개수 -->
+        <div class="like-count-section">
+          <span class="like-count-text" id="likeCountText">좋아요 <span class="like-count" id="likeCount">0</span>개</span>
+        </div>
+        
+        <!-- 태그 영역 -->
+        <div class="tags-section" id="tagsSection">
+          <div class="tags-content" id="tagsContent">
+            <!-- 태그들이 여기에 표시됩니다 -->
           </div>
+          <button class="show-more-tags-btn" id="showMoreTagsBtn" style="display: none;">더보기</button>
+        </div>
+        
+        <!-- 댓글 목록 영역 -->
+        <div class="comments-section" id="commentsSection">
+          <div class="comments-header">
+            <span class="comment-count-text" id="commentCountText">댓글 <span class="comment-count" id="commentCount">0</span>개 모두 보기</span>
+          </div>
+          <div class="comments-list" id="commentsList">
+            <!-- 댓글들이 여기에 동적으로 추가됩니다 -->
+          </div>
+        </div>
+        
+        <!-- 댓글 입력 영역 -->
+        <div class="comment-input-section">
+          <div class="comment-input-container">
+            <input type="text" id="commentInput" placeholder="댓글 달기..." maxlength="500">
+            <button class="comment-send-btn" id="commentSendBtn">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
       
       <!-- 관련 피드 섹션 -->
       <div class="related-posts" id="relatedPosts">
@@ -302,6 +342,7 @@
     let currentPostId = null;
     let currentPostLikes = [];
     let userLikedPosts = new Set();
+    let currentComments = [];
 
     async function loadPhotos(){
       try{ 
@@ -765,6 +806,9 @@
           likeCountEl.textContent = likeCount;
         }
         
+        // 좋아요 개수 텍스트 업데이트
+        updateLikeCountDisplay();
+        
         if (likeIcon) {
           if (isLiked) {
             likeIcon.className = 'fa-solid fa-heart';
@@ -856,15 +900,42 @@
         detailImages.appendChild(imageContainer);
       });
       
-      const tagsContainer = document.getElementById('detailTags').querySelector('.detail-tags-content');
+      // 이미지 인디케이터 생성
+      createImageIndicators(imageUrls.length);
+      
+      const tagsContainer = document.getElementById('tagsContent');
+      if (!tagsContainer) {
+        console.warn('tagsContent 요소를 찾을 수 없습니다.');
+        return;
+      }
+      
       tagsContainer.innerHTML = '';
       if (item.tags && item.tags.length > 0) {
-        item.tags.forEach(tag => {
+        const maxVisibleTags = 3; // 처음에 보여줄 태그 개수
+        const showMoreBtn = document.getElementById('showMoreTagsBtn');
+        
+        item.tags.forEach((tag, index) => {
           const tagEl = document.createElement('span');
-          tagEl.className = 'detail-tag-item';
-          tagEl.textContent = tag;
+          tagEl.className = 'tag-item';
+          tagEl.textContent = `#${tag}`;
+          if (index >= maxVisibleTags) {
+            tagEl.style.display = 'none';
+            tagEl.classList.add('hidden-tag');
+          }
           tagsContainer.appendChild(tagEl);
         });
+        
+        // 태그가 3개 이상이면 더보기 버튼 표시
+        if (item.tags.length > maxVisibleTags && showMoreBtn) {
+          showMoreBtn.style.display = 'inline';
+          showMoreBtn.onclick = () => {
+            const hiddenTags = tagsContainer.querySelectorAll('.hidden-tag');
+            hiddenTags.forEach(tag => tag.style.display = 'inline');
+            showMoreBtn.style.display = 'none';
+          };
+        } else if (showMoreBtn) {
+          showMoreBtn.style.display = 'none';
+        }
       } else {
         tagsContainer.innerHTML = '<span class="no-tags">태그가 없습니다</span>';
       }
@@ -873,6 +944,9 @@
 
       // 좋아요 표시 업데이트
       await updateLikeDisplay();
+
+      // 댓글 로드
+      await loadComments(id);
 
       const canDelete = isAdmin || (currentUser && item.uploadedBy === currentUser.uid);
       const detailDelete = document.getElementById('detailDelete');
@@ -945,6 +1019,198 @@
     // 좋아요/공유 버튼 이벤트 리스너
     document.getElementById('detailLikeBtn').addEventListener('click', handleLikeClick);
     document.getElementById('detailShareBtn').addEventListener('click', handleShareClick);
+
+    // 댓글 관련 함수들
+    async function loadComments(postId) {
+      try {
+        currentComments = await firebaseDataManager.loadComments(postId);
+        displayComments();
+      } catch (error) {
+        // console.error('댓글 로드 실패:', error);
+      }
+    }
+
+    function displayComments() {
+      const commentsList = document.getElementById('commentsList');
+      const commentCount = document.getElementById('commentCount');
+      
+      commentsList.innerHTML = '';
+      commentCount.textContent = currentComments.length;
+      
+      if (currentComments.length === 0) {
+        commentsList.innerHTML = '<p class="no-comments">아직 댓글이 없습니다.</p>';
+        return;
+      }
+      
+      currentComments.forEach(comment => {
+        const commentElement = createCommentElement(comment);
+        commentsList.appendChild(commentElement);
+      });
+    }
+
+    function createCommentElement(comment) {
+      const commentDiv = document.createElement('div');
+      commentDiv.className = 'comment-item';
+      commentDiv.setAttribute('data-comment-id', comment.id);
+      
+      // 작성자 이름 가져오기
+      let authorName = comment.author || '익명';
+      
+      commentDiv.innerHTML = `
+        <div class="comment-content">
+          <div class="comment-author">
+            <span class="author-name">${utils.escapeHtml(authorName)}</span>
+            <span class="comment-date">${formatCommentDate(comment.createdAt)}</span>
+          </div>
+          <div class="comment-text">${utils.escapeHtml(comment.content)}</div>
+        </div>
+        ${(isAdmin || (currentUser && comment.userId === currentUser.uid)) ? 
+          `<button class="comment-delete-btn" data-comment-id="${comment.id}">
+            <i class="fa-solid fa-trash"></i>
+          </button>` : ''}
+      `;
+      
+      // 댓글 삭제 버튼 이벤트 리스너
+      const deleteBtn = commentDiv.querySelector('.comment-delete-btn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => deleteComment(comment.id));
+      }
+      
+      return commentDiv;
+    }
+
+    function formatCommentDate(timestamp) {
+      if (!timestamp) return '';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffMinutes = Math.ceil(diffTime / (1000 * 60));
+      const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffMinutes < 1) return '방금 전';
+      if (diffMinutes < 60) return `${diffMinutes}분 전`;
+      if (diffHours < 24) return `${diffHours}시간 전`;
+      if (diffDays < 7) return `${diffDays}일 전`;
+      
+      return date.toLocaleDateString('ko-KR', {
+        month: '2-digit',
+        day: '2-digit'
+      });
+    }
+
+    async function addComment() {
+      if (!currentUser) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+      
+      const commentInput = document.getElementById('commentInput');
+      const content = commentInput.value.trim();
+      
+      if (!content) {
+        alert('댓글 내용을 입력해주세요.');
+        return;
+      }
+      
+      if (content.length > 500) {
+        alert('댓글은 500자 이하로 입력해주세요.');
+        return;
+      }
+      
+      try {
+        // DB에서 사용자 이름 가져오기
+        let authorName = currentUser.displayName || currentUser.email.split('@')[0];
+        try {
+          const memberRef = firebaseDataManager.getDocRef('members', currentUser.uid);
+          const memberSnap = await firebaseDataManager.getDocument(memberRef);
+          if (memberSnap.exists()) {
+            const memberData = memberSnap.data();
+            authorName = memberData.name || authorName;
+          }
+        } catch (error) {
+          // DB에서 이름을 가져오지 못한 경우 기본값 사용
+        }
+        
+        const commentData = {
+          content: content,
+          author: authorName,
+          userId: currentUser.uid,
+          userEmail: currentUser.email
+        };
+        
+        const result = await firebaseDataManager.addComment(currentPostId, commentData);
+        
+        if (result.success) {
+          commentInput.value = '';
+          await loadComments(currentPostId);
+        } else {
+          alert('댓글 작성에 실패했습니다: ' + result.error);
+        }
+      } catch (error) {
+        alert('댓글 작성 중 오류가 발생했습니다.');
+      }
+    }
+
+    async function deleteComment(commentId) {
+      if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+        return;
+      }
+      
+      try {
+        const result = await firebaseDataManager.deleteComment(commentId);
+        
+        if (result.success) {
+          await loadComments(currentPostId);
+        } else {
+          alert('댓글 삭제에 실패했습니다: ' + result.error);
+        }
+      } catch (error) {
+        alert('댓글 삭제 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 댓글 입력 이벤트 리스너
+    document.getElementById('commentSendBtn').addEventListener('click', addComment);
+    document.getElementById('commentInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        addComment();
+      }
+    });
+
+    // 이미지 인디케이터 생성 함수
+    function createImageIndicators(imageCount) {
+      const indicatorsContainer = document.getElementById('imageIndicators');
+      if (!indicatorsContainer) {
+        console.warn('imageIndicators 요소를 찾을 수 없습니다.');
+        return;
+      }
+      
+      indicatorsContainer.innerHTML = '';
+      
+      if (imageCount > 1) {
+        for (let i = 0; i < imageCount; i++) {
+          const indicator = document.createElement('div');
+          indicator.className = 'image-indicator';
+          if (i === 0) indicator.classList.add('active');
+          indicatorsContainer.appendChild(indicator);
+        }
+      }
+    }
+
+    // 좋아요 개수 표시 업데이트
+    function updateLikeCountDisplay() {
+      const likeCountEl = document.getElementById('likeCount');
+      const likeCountText = document.getElementById('likeCountText');
+      
+      if (!likeCountEl || !likeCountText) {
+        console.warn('좋아요 관련 요소를 찾을 수 없습니다.');
+        return;
+      }
+      
+      const count = parseInt(likeCountEl.textContent) || 0;
+      likeCountText.textContent = `좋아요 ${count}개`;
+    }
 
 
     function updateUploadButtonVisibility() {

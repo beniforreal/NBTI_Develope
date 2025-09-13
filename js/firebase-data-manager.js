@@ -1273,6 +1273,145 @@ class FirebaseDataManager {
   serverTimestamp() {
     return serverTimestamp();
   }
+
+  // 댓글 관련 함수들
+  async addComment(postId, commentData) {
+    try {
+      const commentsRef = collection(this.db, 'comments');
+      const docData = {
+        postId: postId,
+        ...commentData,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+      
+      const docRef = await addDoc(commentsRef, docData);
+      return { success: true, id: docRef.id };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async loadComments(postId) {
+    try {
+      const commentsRef = collection(this.db, 'comments');
+      const q = query(
+        commentsRef, 
+        where('postId', '==', postId),
+        orderBy('createdAt', 'asc')
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const comments = [];
+      querySnapshot.forEach((doc) => {
+        comments.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return comments;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async deleteComment(commentId) {
+    try {
+      const commentRef = doc(this.db, 'comments', commentId);
+      await deleteDoc(commentRef);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async loadUserComments(userId) {
+    try {
+      const commentsRef = collection(this.db, 'comments');
+      const q = query(
+        commentsRef, 
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const comments = [];
+      querySnapshot.forEach((doc) => {
+        comments.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return comments;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async loadUserPosts(userId) {
+    try {
+      const photosRef = collection(this.db, 'photos');
+      const q = query(
+        photosRef, 
+        where('uploadedBy', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const posts = [];
+      querySnapshot.forEach((doc) => {
+        posts.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return posts;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async loadUserLikedPosts(userId) {
+    try {
+      const likesRef = collection(this.db, 'post_likes');
+      const q = query(
+        likesRef, 
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const likedPostIds = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        likedPostIds.push(data.postId);
+      });
+      
+      // 좋아요한 포스트들의 상세 정보 가져오기
+      if (likedPostIds.length === 0) return [];
+      
+      const photosRef = collection(this.db, 'photos');
+      const posts = [];
+      
+      for (const postId of likedPostIds) {
+        const postRef = doc(this.db, 'photos', postId);
+        const postSnap = await getDoc(postRef);
+        if (postSnap.exists()) {
+          posts.push({
+            id: postSnap.id,
+            ...postSnap.data()
+          });
+        }
+      }
+      
+      return posts;
+    } catch (error) {
+      return [];
+    }
+  }
 }
 
 // 전역 인스턴스 생성
