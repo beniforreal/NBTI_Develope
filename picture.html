@@ -193,6 +193,11 @@
           <div class="image-indicators" id="imageIndicators">
             <!-- 이미지 개수 표시 동그라미들이 여기에 생성됩니다 -->
           </div>
+          
+          <!-- 다운로드 버튼 -->
+          <button class="download-btn" id="downloadBtn">
+            <i class="fa-solid fa-download"></i>
+          </button>
         </div>
         
         <!-- 좋아요 애니메이션 하트들 -->
@@ -201,43 +206,53 @@
         </div>
       </div>
       
+      <!-- 다운로드 모달 -->
+      <div class="download-modal" id="downloadModal">
+        <div class="download-modal-content">
+          <div class="download-modal-header">
+            <h3>이미지 다운로드</h3>
+            <button class="download-modal-close" id="downloadModalClose">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+          <div class="download-modal-body">
+            <p>다운로드할 이미지를 선택해주세요.</p>
+            <div class="download-options">
+              <button class="download-option-btn" id="downloadCurrentBtn">
+                <i class="fa-solid fa-image"></i>
+                <span>현재 이미지 다운로드</span>
+              </button>
+              <button class="download-option-btn" id="downloadAllBtn">
+                <i class="fa-solid fa-images"></i>
+                <span>모든 이미지 다운로드</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
             <!-- 인스타그램 스타일 하단 영역 -->
       <div class="instagram-style-bottom">
-        <!-- 상호작용 버튼들 (좋아요, 댓글, 공유) -->
+        <!-- 상호작용 버튼들 (좋아요만) -->
         <div class="interaction-buttons">
           <button class="detail-like-btn" id="detailLikeBtn">
             <i class="fa-regular fa-heart"></i>
+            <span class="like-count" id="likeCount">0</span>
           </button>
-          <button class="comment-btn" id="commentBtn">
-            <i class="fa-regular fa-comment"></i>
-          </button>
-          <button class="detail-share-btn" id="detailShareBtn">
-            <i class="fa-regular fa-paper-plane"></i>
-          </button>
-          <div class="spacer"></div>
-          <button class="bookmark-btn" id="bookmarkBtn">
-            <i class="fa-regular fa-bookmark"></i>
-          </button>
+          <div class="tags-section" id="tagsSection">
+            <div class="tags-content" id="tagsContent">
+              <!-- 태그들이 여기에 표시됩니다 -->
+            </div>
+            <button class="show-more-tags-btn" id="showMoreTagsBtn" style="display: none;"><p>더보기</p></button>
+          </div>
         </div>
         
-        <!-- 좋아요 개수 -->
-        <div class="like-count-section">
-          <span class="like-count-text" id="likeCountText">좋아요 <span class="like-count" id="likeCount">0</span>개</span>
-        </div>
         
         <!-- 태그 영역 -->
-        <div class="tags-section" id="tagsSection">
-          <div class="tags-content" id="tagsContent">
-            <!-- 태그들이 여기에 표시됩니다 -->
-          </div>
-          <button class="show-more-tags-btn" id="showMoreTagsBtn" style="display: none;">더보기</button>
-        </div>
+
         
         <!-- 댓글 목록 영역 -->
         <div class="comments-section" id="commentsSection">
-          <div class="comments-header">
-            <span class="comment-count-text" id="commentCountText">댓글 <span class="comment-count" id="commentCount">0</span>개 모두 보기</span>
-          </div>
           <div class="comments-list" id="commentsList">
             <!-- 댓글들이 여기에 동적으로 추가됩니다 -->
           </div>
@@ -846,33 +861,27 @@
       }
     }
 
-    async function handleShareClick() {
-      const currentUrl = window.location.href;
-      
+
+    // 이미지 배경 설정 함수
+    function setImageBackground(img, container) {
       try {
-        await navigator.clipboard.writeText(currentUrl);
+        // 이미지 URL을 CSS 변수로 설정
+        const imageUrl = img.src;
+        container.style.setProperty('--blurred-bg-image', `url(${imageUrl})`);
         
-        // 공유 버튼에 피드백
-        const shareBtn = document.getElementById('detailShareBtn');
-        const shareIcon = shareBtn.querySelector('i');
-        shareIcon.className = 'fa-solid fa-check';
-        shareBtn.classList.add('shared');
-        
-        setTimeout(() => {
-          shareIcon.className = 'fa-solid fa-share';
-          shareBtn.classList.remove('shared');
-        }, 1500);
+        // 실제 이미지는 선명하게 유지
+        const actualImg = container.querySelector('img');
+        if (actualImg) {
+          actualImg.style.position = 'relative';
+          actualImg.style.zIndex = '2';
+          actualImg.style.filter = 'none';
+          actualImg.style.transform = 'none';
+          actualImg.style.background = 'none';
+        }
         
       } catch (error) {
-        // 클립보드 API 실패 시 대체 방법
-        const textArea = document.createElement('textarea');
-        textArea.value = currentUrl;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        
-        alert('링크가 클립보드에 복사되었습니다!');
+        // 배경 설정 실패 시 기본 배경 유지
+        console.warn('이미지 배경 설정 실패:', error);
       }
     }
 
@@ -920,6 +929,12 @@
           <img src="${url}" alt="이미지 ${index + 1}" loading="lazy">
         `;
         imageCarousel.appendChild(imageContainer);
+        
+        // 이미지 로드 후 배경 설정
+        const img = imageContainer.querySelector('img');
+        img.onload = () => {
+          setImageBackground(img, imageContainer);
+        };
       });
       
       // 캐러셀 버튼 표시/숨김
@@ -1047,13 +1062,105 @@
       }
     });
 
-    // 좋아요/공유 버튼 이벤트 리스너
+    // 좋아요 버튼 이벤트 리스너
     document.getElementById('detailLikeBtn').addEventListener('click', handleLikeClick);
-    document.getElementById('detailShareBtn').addEventListener('click', handleShareClick);
 
     // 캐러셀 버튼 이벤트 리스너
     document.getElementById('carouselPrev').addEventListener('click', prevImage);
     document.getElementById('carouselNext').addEventListener('click', nextImage);
+    
+    // 다운로드 관련 이벤트 리스너
+    document.getElementById('downloadBtn').addEventListener('click', openDownloadModal);
+    document.getElementById('downloadModalClose').addEventListener('click', closeDownloadModal);
+    document.getElementById('downloadCurrentBtn').addEventListener('click', downloadCurrentImage);
+    document.getElementById('downloadAllBtn').addEventListener('click', downloadAllImages);
+    
+    // 다운로드 관련 함수들
+    function openDownloadModal() {
+      const modal = document.getElementById('downloadModal');
+      modal.classList.add('active');
+    }
+    
+    function closeDownloadModal() {
+      const modal = document.getElementById('downloadModal');
+      modal.classList.remove('active');
+    }
+    
+    // 모달 외부 클릭 시 닫기
+    document.getElementById('downloadModal').addEventListener('click', (e) => {
+      if (e.target.id === 'downloadModal') {
+        closeDownloadModal();
+      }
+    });
+    
+    async function downloadCurrentImage() {
+      try {
+        const imageItems = document.querySelectorAll('.carousel-image-item');
+        const currentItem = imageItems[currentImageIndex];
+        if (!currentItem) return;
+        
+        const img = currentItem.querySelector('img');
+        if (!img) return;
+        
+        const imageUrl = img.src;
+        const fileName = `image_${currentImageIndex + 1}.jpg`;
+        
+        await downloadImage(imageUrl, fileName);
+        closeDownloadModal();
+        
+      } catch (error) {
+        console.error('현재 이미지 다운로드 실패:', error);
+        alert('이미지 다운로드에 실패했습니다.');
+      }
+    }
+    
+    async function downloadAllImages() {
+      try {
+        const imageItems = document.querySelectorAll('.carousel-image-item');
+        
+        for (let i = 0; i < imageItems.length; i++) {
+          const img = imageItems[i].querySelector('img');
+          if (!img) continue;
+          
+          const imageUrl = img.src;
+          const fileName = `image_${i + 1}.jpg`;
+          
+          // 각 이미지를 순차적으로 다운로드 (브라우저 제한 고려)
+          await downloadImage(imageUrl, fileName);
+          
+          // 다운로드 간격을 두어 브라우저 제한 회피
+          if (i < imageItems.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+        
+        closeDownloadModal();
+        alert('모든 이미지 다운로드가 완료되었습니다.');
+        
+      } catch (error) {
+        console.error('전체 이미지 다운로드 실패:', error);
+        alert('이미지 다운로드에 실패했습니다.');
+      }
+    }
+    
+    async function downloadImage(imageUrl, fileName) {
+      try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+      } catch (error) {
+        throw new Error('이미지 다운로드 실패: ' + error.message);
+      }
+    }
 
     // 댓글 관련 함수들
     async function loadComments(postId) {
@@ -1248,6 +1355,12 @@
       // 선택된 이미지 표시
       if (imageItems[index]) {
         imageItems[index].style.display = 'block';
+        
+        // 이미지가 로드되었는지 확인하고 배경 업데이트
+        const img = imageItems[index].querySelector('img');
+        if (img && img.complete && img.naturalHeight !== 0) {
+          setImageBackground(img, imageItems[index]);
+        }
       }
       if (indicators[index]) {
         indicators[index].classList.add('active');
