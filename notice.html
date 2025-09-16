@@ -156,11 +156,23 @@
         return;
       }
 
+      // 중요 공지사항을 먼저 정렬하고, 그 다음 최신순으로 정렬
+      const sortedNotices = notices.sort((a, b) => {
+        // 중요 공지사항 우선
+        if (a.isImportant && !b.isImportant) return -1;
+        if (!a.isImportant && b.isImportant) return 1;
+        
+        // 중요도가 같으면 최신순
+        const aTime = a.updatedAt || a.createdAt;
+        const bTime = b.updatedAt || b.createdAt;
+        return bTime - aTime;
+      });
+
       // 권한 확인 후 렌더링 (create-notice.html 구조와 동일)
       await checkUserPermissions();
       updateCreateButtonVisibility();
 
-      for (const notice of notices) {
+      for (const notice of sortedNotices) {
         const noticeCard = await createNoticeCard(notice);
         noticeList.appendChild(noticeCard);
       }
