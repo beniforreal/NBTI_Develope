@@ -5757,7 +5757,7 @@ dialog {
 }
 
 .notice-snippet-item-title.important {
-  color: var(--warn);
+  color: #ff1613;
 }
 
 .notice-snippet-item-meta {
