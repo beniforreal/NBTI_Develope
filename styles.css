@@ -3766,38 +3766,7 @@ footer {
   font-size: 14px;
 }
 
-/* 알람 배지 스타일 */
-.notification-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #ff6b9d;
-  color: white;
-  border-radius: 10px;
-  padding: 2px 6px;
-  font-size: 10px;
-  font-weight: bold;
-  min-width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-.nav-link.notification-btn {
-  position: relative;
-}
-
-.mobile-bottom-nav .notification-badge {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  font-size: 9px;
-  min-width: 16px;
-  height: 16px;
-  padding: 1px 4px;
-}
+/* 알람 배지 스타일은 이제 Tailwind CSS로 처리됩니다 */
 
 /* Google 로그인 버튼 스타일 */
 .login-divider {
