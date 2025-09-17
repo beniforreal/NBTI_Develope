@@ -58,5 +58,23 @@ service cloud.firestore {
          (exists(/databases/$(database)/documents/members/$(request.auth.uid)) &&
           get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role in ['길드장', '부길드장', 'admin']));
     }
+    
+    // notifications 컬렉션 규칙 (알림 기능)
+    match /notifications/{notificationId} {
+      // 인증된 사용자만 자신의 알림을 읽을 수 있음
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.targetUserId;
+      // 인증된 사용자만 알림 생성 가능
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.actorId;
+      // 알림 수신자만 읽음 처리 가능
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.targetUserId;
+      // 알림 수신자 또는 관리자만 삭제 가능
+      allow delete: if request.auth != null && 
+        (resource.data.targetUserId == request.auth.uid || 
+         (exists(/databases/$(database)/documents/members/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role in ['길드장', '부길드장', 'admin']));
+    }
   }
 }

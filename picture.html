@@ -792,6 +792,9 @@
           createLikeAnimation();
           createLikeAnimation(); // 두 개의 하트 애니메이션
           setTimeout(() => createLikeAnimation(), 100); // 세 번째 하트
+          
+          // 좋아요 알림 생성
+          await createLikeNotification();
         } else {
           // 좋아요 제거됨 - 즉시 UI 업데이트
           userLikedPosts.delete(currentPostId);
@@ -829,6 +832,66 @@
       } finally {
         // 버튼 다시 활성화
         likeBtn.disabled = false;
+      }
+    }
+
+    // 좋아요 알림 생성 함수
+    async function createLikeNotification() {
+      try {
+        // 현재 포스트 정보 가져오기
+        const items = await loadPhotos();
+        const currentPost = items.find(item => item.id === currentPostId);
+        
+        if (!currentPost || !currentPost.uploadedBy) return;
+        
+        // 본인 포스트에 좋아요한 경우 알림 생성하지 않음
+        if (currentPost.uploadedBy === currentUser.uid) return;
+        
+        // 사용자 이름 가져오기
+        let likerName = currentUser.displayName || currentUser.email.split('@')[0];
+        try {
+          const memberRef = firebaseDataManager.getDocRef('members', currentUser.uid);
+          const memberSnap = await firebaseDataManager.getDocument(memberRef);
+          if (memberSnap.exists()) {
+            const memberData = memberSnap.data();
+            likerName = memberData.name || likerName;
+          }
+        } catch (error) {
+          // DB에서 이름을 가져오지 못한 경우 기본값 사용
+        }
+        
+        // 알림 생성
+        await firebaseDataManager.createLikeNotification(
+          currentPostId,
+          currentPost.uploadedBy,
+          likerName
+        );
+      } catch (error) {
+        console.error('좋아요 알림 생성 실패:', error);
+      }
+    }
+
+    // 댓글 알림 생성 함수
+    async function createCommentNotification(commentContent, commenterName) {
+      try {
+        // 현재 포스트 정보 가져오기
+        const items = await loadPhotos();
+        const currentPost = items.find(item => item.id === currentPostId);
+        
+        if (!currentPost || !currentPost.uploadedBy) return;
+        
+        // 본인 포스트에 댓글한 경우 알림 생성하지 않음
+        if (currentPost.uploadedBy === currentUser.uid) return;
+        
+        // 알림 생성
+        await firebaseDataManager.createCommentNotification(
+          currentPostId,
+          currentPost.uploadedBy,
+          commenterName,
+          commentContent
+        );
+      } catch (error) {
+        console.error('댓글 알림 생성 실패:', error);
       }
     }
 
@@ -1346,6 +1409,9 @@
           commentInput.value = '';
           // 실시간으로 댓글 목록에 새 댓글 추가
           await addCommentToDisplay(commentData);
+          
+          // 댓글 알림 생성
+          await createCommentNotification(commentData.content, authorName);
       } else {
           alert('댓글 작성에 실패했습니다: ' + result.error);
         }

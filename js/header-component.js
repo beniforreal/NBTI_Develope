@@ -39,6 +39,10 @@ class HeaderComponent {
                   <i class="fa-solid fa-right-to-bracket" style="color:rgb(0, 0, 0);"></i>
                   <span class="nav-text">로그인</span>
                 </a>
+                <a href="#" class="nav-link notification-btn" id="notificationBtn" title="알림" style="display: none;">
+                  <i class="fa-solid fa-bell" style="color: #ff6b9d;"></i>
+                  <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                </a>
                 <a href="mypage.html" class="nav-link mypage-btn" id="mypageBtn" title="마이페이지" style="display: none;">
                   <i class="fa-solid fa-user" style="color: #4CAF50;"></i>
                   <span class="nav-text">마이페이지</span>
@@ -95,6 +99,11 @@ class HeaderComponent {
           <i class="fa-solid fa-right-to-bracket"></i>
           <span>로그인</span>
         </a>
+        <a href="#" class="bottom-nav-link auth-link notification-btn" id="mobileNotificationBtn" title="알림" style="display: none;">
+          <i class="fa-solid fa-bell"></i>
+          <span>알림</span>
+          <span class="notification-badge" id="mobileNotificationBadge" style="display: none;">0</span>
+        </a>
         <a href="mypage.html" class="bottom-nav-link auth-link mypage-btn" id="mobileMypageBtn" title="마이페이지" style="display: none;">
           <i class="fa-solid fa-user"></i>
           <span>마이페이지</span>
@@ -118,6 +127,8 @@ class HeaderComponent {
 
     const loginBtn = document.getElementById('loginBtn');
     const mobileLoginBtn = document.getElementById('mobileLoginBtn');
+    const notificationBtn = document.getElementById('notificationBtn');
+    const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
     const mypageBtn = document.getElementById('mypageBtn');
     const mobileMypageBtn = document.getElementById('mobileMypageBtn');
     const logoutBtn = document.getElementById('logoutBtn');
@@ -129,6 +140,14 @@ class HeaderComponent {
 
     if (mobileLoginBtn) {
       mobileLoginBtn.addEventListener('click', (e) => this.handleLoginClick(e));
+    }
+
+    if (notificationBtn) {
+      notificationBtn.addEventListener('click', (e) => this.handleNotificationClick(e));
+    }
+
+    if (mobileNotificationBtn) {
+      mobileNotificationBtn.addEventListener('click', (e) => this.handleNotificationClick(e));
     }
 
     if (logoutBtn) {
@@ -168,6 +187,11 @@ class HeaderComponent {
       this.currentUser = firebaseDataManager.getCurrentUser();
       this.updateLoginButton();
       
+      // 로그인된 사용자라면 알람 배지 업데이트
+      if (this.currentUser) {
+        this.updateNotificationBadge();
+      }
+      
       window.dispatchEvent(new CustomEvent('authStateChanged', { 
         detail: { user: this.currentUser } 
       }));
@@ -186,6 +210,208 @@ class HeaderComponent {
       window.location.href = 'mypage.html';
     } else {
       this.openLoginModal();
+    }
+  }
+
+  handleNotificationClick(e) {
+    e.preventDefault();
+    this.openNotificationModal();
+  }
+
+  openNotificationModal() {
+    // 알람 모달이 없으면 생성
+    let notificationModal = document.getElementById('notificationModal');
+    if (!notificationModal) {
+      this.createNotificationModal();
+      notificationModal = document.getElementById('notificationModal');
+    }
+    
+    if (notificationModal) {
+      notificationModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      this.loadNotifications();
+    }
+  }
+
+  createNotificationModal() {
+    const modalHTML = `
+      <div id="notificationModal" class="notification-modal">
+        <div class="notification-modal-content">
+          <div class="notification-modal-header">
+            <h3>알림</h3>
+            <button class="notification-modal-close" id="notificationModalClose">&times;</button>
+          </div>
+          <div class="notification-modal-body">
+            <div class="notification-list" id="notificationList">
+              <!-- 알림 목록이 여기에 동적으로 추가됩니다 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // 모달 닫기 이벤트 리스너
+    const closeBtn = document.getElementById('notificationModalClose');
+    const modal = document.getElementById('notificationModal');
+    
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => this.closeNotificationModal());
+    }
+    
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          this.closeNotificationModal();
+        }
+      });
+    }
+    
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal && modal.style.display === 'flex') {
+        this.closeNotificationModal();
+      }
+    });
+  }
+
+  closeNotificationModal() {
+    const modal = document.getElementById('notificationModal');
+    if (modal) {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  }
+
+  async loadNotifications() {
+    if (!this.currentUser || typeof firebaseDataManager === 'undefined') {
+      return;
+    }
+    
+    try {
+      const notifications = await firebaseDataManager.loadNotifications(this.currentUser.uid);
+      this.displayNotifications(notifications);
+    } catch (error) {
+      console.error('알림 로드 실패:', error);
+    }
+  }
+
+  displayNotifications(notifications) {
+    const notificationList = document.getElementById('notificationList');
+    if (!notificationList) return;
+    
+    if (notifications.length === 0) {
+      notificationList.innerHTML = '<p class="no-notifications">새로운 알림이 없습니다.</p>';
+      return;
+    }
+    
+    notificationList.innerHTML = '';
+    notifications.forEach(notification => {
+      const notificationElement = this.createNotificationElement(notification);
+      notificationList.appendChild(notificationElement);
+    });
+  }
+
+  createNotificationElement(notification) {
+    const element = document.createElement('div');
+    element.className = `notification-item ${notification.isRead ? 'read' : 'unread'}`;
+    
+    const timeAgo = this.formatTimeAgo(notification.createdAt);
+    
+    element.innerHTML = `
+      <div class="notification-content">
+        <div class="notification-icon">
+          <i class="fa-solid ${this.getNotificationIcon(notification.type)}"></i>
+        </div>
+        <div class="notification-text">
+          <p>${notification.message}</p>
+          <span class="notification-time">${timeAgo}</span>
+        </div>
+      </div>
+      ${!notification.isRead ? '<div class="notification-dot"></div>' : ''}
+    `;
+    
+    // 알림 클릭 시 해당 포스트로 이동
+    element.addEventListener('click', () => {
+      if (notification.postId) {
+        window.location.href = `picture.html?id=${notification.postId}`;
+      }
+      this.markAsRead(notification.id);
+    });
+    
+    return element;
+  }
+
+  getNotificationIcon(type) {
+    switch (type) {
+      case 'like': return 'fa-heart';
+      case 'comment': return 'fa-comment';
+      case 'follow': return 'fa-user-plus';
+      default: return 'fa-bell';
+    }
+  }
+
+  formatTimeAgo(timestamp) {
+    const now = new Date();
+    const time = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const diffTime = Math.abs(now - time);
+    const diffMinutes = Math.ceil(diffTime / (1000 * 60));
+    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffMinutes < 1) return '방금 전';
+    if (diffMinutes < 60) return `${diffMinutes}분 전`;
+    if (diffHours < 24) return `${diffHours}시간 전`;
+    if (diffDays < 7) return `${diffDays}일 전`;
+    
+    return time.toLocaleDateString('ko-KR', {
+      month: '2-digit',
+      day: '2-digit'
+    });
+  }
+
+  async markAsRead(notificationId) {
+    if (typeof firebaseDataManager === 'undefined') return;
+    
+    try {
+      await firebaseDataManager.markNotificationAsRead(notificationId);
+      this.updateNotificationBadge();
+    } catch (error) {
+      console.error('알림 읽음 처리 실패:', error);
+    }
+  }
+
+  async updateNotificationBadge() {
+    if (!this.currentUser || typeof firebaseDataManager === 'undefined') {
+      return;
+    }
+    
+    try {
+      const unreadCount = await firebaseDataManager.getUnreadNotificationCount(this.currentUser.uid);
+      
+      const badge = document.getElementById('notificationBadge');
+      const mobileBadge = document.getElementById('mobileNotificationBadge');
+      
+      if (badge) {
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+          badge.style.display = 'inline';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+      
+      if (mobileBadge) {
+        if (unreadCount > 0) {
+          mobileBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+          mobileBadge.style.display = 'inline';
+        } else {
+          mobileBadge.style.display = 'none';
+        }
+      }
+    } catch (error) {
+      console.error('알림 배지 업데이트 실패:', error);
     }
   }
 
@@ -216,6 +442,8 @@ class HeaderComponent {
   updateLoginButton() {
     const loginBtn = document.getElementById('loginBtn');
     const mobileLoginBtn = document.getElementById('mobileLoginBtn');
+    const notificationBtn = document.getElementById('notificationBtn');
+    const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
     const mypageBtn = document.getElementById('mypageBtn');
     const mobileMypageBtn = document.getElementById('mobileMypageBtn');
     const logoutBtn = document.getElementById('logoutBtn');
@@ -234,6 +462,16 @@ class HeaderComponent {
       if (mobileLoginBtn) {
         mobileLoginBtn.style.display = 'none';
         mobileLoginBtn.style.visibility = 'hidden';
+      }
+
+      if (notificationBtn) {
+        notificationBtn.style.display = 'inline-flex';
+        notificationBtn.style.visibility = 'visible';
+      }
+
+      if (mobileNotificationBtn) {
+        mobileNotificationBtn.style.display = 'flex';
+        mobileNotificationBtn.style.visibility = 'visible';
       }
 
       if (mypageBtn) {
@@ -277,6 +515,16 @@ class HeaderComponent {
         mobileLoginBtn.innerHTML = `<i class="fa-solid fa-right-to-bracket" style="color: #FFD43B;"></i><span>로그인</span>`;
         mobileLoginBtn.title = '로그인';
         mobileLoginBtn.href = '#';
+      }
+
+      if (notificationBtn) {
+        notificationBtn.style.display = 'none';
+        notificationBtn.style.visibility = 'hidden';
+      }
+
+      if (mobileNotificationBtn) {
+        mobileNotificationBtn.style.display = 'none';
+        mobileNotificationBtn.style.visibility = 'hidden';
       }
 
       if (mypageBtn) {

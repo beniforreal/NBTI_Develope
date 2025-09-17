@@ -11,7 +11,8 @@ import {
   query, 
   orderBy, 
   where,
-  serverTimestamp 
+  serverTimestamp,
+  writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 
@@ -1451,6 +1452,150 @@ class FirebaseDataManager {
     } catch (error) {
       return [];
     }
+  }
+
+  // 알람 관련 함수들
+  async createNotification(notificationData) {
+    try {
+      const notificationsRef = collection(this.db, 'notifications');
+      const notification = {
+        ...notificationData,
+        isRead: false,
+        createdAt: serverTimestamp()
+      };
+      
+      const docRef = await addDoc(notificationsRef, notification);
+      return { success: true, id: docRef.id };
+    } catch (error) {
+      console.error('알림 생성 오류:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async loadNotifications(userId, limit = 50) {
+    try {
+      const notificationsRef = collection(this.db, 'notifications');
+      const q = query(
+        notificationsRef,
+        where('targetUserId', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const notifications = [];
+      querySnapshot.forEach((doc) => {
+        notifications.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return notifications.slice(0, limit);
+    } catch (error) {
+      console.error('알림 로드 오류:', error);
+      return [];
+    }
+  }
+
+  async getUnreadNotificationCount(userId) {
+    try {
+      const notificationsRef = collection(this.db, 'notifications');
+      const q = query(
+        notificationsRef,
+        where('targetUserId', '==', userId),
+        where('isRead', '==', false)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      return querySnapshot.size;
+    } catch (error) {
+      console.error('읽지 않은 알림 수 조회 오류:', error);
+      return 0;
+    }
+  }
+
+  async markNotificationAsRead(notificationId) {
+    try {
+      const notificationRef = doc(this.db, 'notifications', notificationId);
+      await updateDoc(notificationRef, {
+        isRead: true,
+        readAt: serverTimestamp()
+      });
+      return { success: true };
+    } catch (error) {
+      console.error('알림 읽음 처리 오류:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async markAllNotificationsAsRead(userId) {
+    try {
+      const notificationsRef = collection(this.db, 'notifications');
+      const q = query(
+        notificationsRef,
+        where('targetUserId', '==', userId),
+        where('isRead', '==', false)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const batch = writeBatch(this.db);
+      querySnapshot.forEach((doc) => {
+        batch.update(doc.ref, {
+          isRead: true,
+          readAt: serverTimestamp()
+        });
+      });
+      
+      await batch.commit();
+      return { success: true };
+    } catch (error) {
+      console.error('모든 알림 읽음 처리 오류:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async deleteNotification(notificationId) {
+    try {
+      const notificationRef = doc(this.db, 'notifications', notificationId);
+      await deleteDoc(notificationRef);
+      return { success: true };
+    } catch (error) {
+      console.error('알림 삭제 오류:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // 좋아요 알림 생성
+  async createLikeNotification(postId, postAuthorId, likerName) {
+    if (!postAuthorId || !likerName) return { success: false, error: '필수 정보 누락' };
+    
+    const notificationData = {
+      type: 'like',
+      targetUserId: postAuthorId,
+      postId: postId,
+      message: `${likerName}님이 회원님의 포스트를 좋아합니다.`,
+      actorName: likerName,
+      actorId: this.getCurrentUser()?.uid
+    };
+    
+    return await this.createNotification(notificationData);
+  }
+
+  // 댓글 알림 생성
+  async createCommentNotification(postId, postAuthorId, commenterName, commentContent) {
+    if (!postAuthorId || !commenterName) return { success: false, error: '필수 정보 누락' };
+    
+    const notificationData = {
+      type: 'comment',
+      targetUserId: postAuthorId,
+      postId: postId,
+      message: `${commenterName}님이 회원님의 포스트에 댓글을 남겼습니다.`,
+      actorName: commenterName,
+      actorId: this.getCurrentUser()?.uid,
+      commentContent: commentContent
+    };
+    
+    return await this.createNotification(notificationData);
   }
 }
 
