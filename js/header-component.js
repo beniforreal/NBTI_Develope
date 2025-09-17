@@ -281,7 +281,8 @@ class HeaderComponent {
     }
     
     try {
-      const notifications = await firebaseDataManager.loadNotifications(this.currentUser.uid);
+      // 읽지 않은 알림만 로드
+      const notifications = await firebaseDataManager.loadNotifications(this.currentUser.uid, 50, false);
       this.displayNotifications(notifications);
     } catch (error) {
       console.error('알림 로드 실패:', error);
@@ -292,13 +293,16 @@ class HeaderComponent {
     const notificationList = document.getElementById('notificationList');
     if (!notificationList) return;
     
-    if (notifications.length === 0) {
+    // 읽지 않은 알림만 필터링
+    const unreadNotifications = notifications.filter(notification => !notification.isRead);
+    
+    if (unreadNotifications.length === 0) {
       notificationList.innerHTML = '<p class="no-notifications">새로운 알림이 없습니다.</p>';
       return;
     }
     
     notificationList.innerHTML = '';
-    notifications.forEach(notification => {
+    unreadNotifications.forEach(notification => {
       const notificationElement = this.createNotificationElement(notification);
       notificationList.appendChild(notificationElement);
     });
@@ -306,7 +310,7 @@ class HeaderComponent {
 
   createNotificationElement(notification) {
     const element = document.createElement('div');
-    element.className = `notification-item ${notification.isRead ? 'read' : 'unread'}`;
+    element.className = 'notification-item unread';
     
     const timeAgo = this.formatTimeAgo(notification.createdAt);
     
@@ -323,16 +327,19 @@ class HeaderComponent {
     `;
     
     // 알림 클릭 시 해당 포스트로 이동하고 읽음 처리
-    element.addEventListener('click', () => {
-      if (notification.postId) {
-        window.location.href = `picture.html?id=${notification.postId}`;
-      }
+    element.addEventListener('click', async () => {
       // 읽지 않은 알림만 읽음 처리
       if (!notification.isRead) {
-        this.markAsRead(notification.id);
-        // UI에서 즉시 읽음 상태로 변경
-        element.classList.remove('unread');
-        element.classList.add('read');
+        await this.markAsRead(notification.id);
+        // UI에서 즉시 제거
+        element.remove();
+        // 배지 업데이트
+        await this.updateNotificationBadge();
+      }
+      
+      // 알림 클릭 시 해당 포스트로 이동
+      if (notification.postId) {
+        window.location.href = `picture.html?id=${notification.postId}`;
       }
     });
     
@@ -371,8 +378,12 @@ class HeaderComponent {
     if (typeof firebaseDataManager === 'undefined') return;
     
     try {
-      await firebaseDataManager.markNotificationAsRead(notificationId);
-      this.updateNotificationBadge();
+      const result = await firebaseDataManager.markNotificationAsRead(notificationId);
+      if (result.success) {
+        console.log('알림 읽음 처리 완료:', notificationId);
+      } else {
+        console.error('알림 읽음 처리 실패:', result.error);
+      }
     } catch (error) {
       console.error('알림 읽음 처리 실패:', error);
     }

@@ -1472,14 +1472,28 @@ class FirebaseDataManager {
     }
   }
 
-  async loadNotifications(userId, limit = 50) {
+  async loadNotifications(userId, limit = 50, showRead = false) {
     try {
       const notificationsRef = collection(this.db, 'notifications');
-      const q = query(
-        notificationsRef,
-        where('targetUserId', '==', userId),
-        orderBy('createdAt', 'desc')
-      );
+      let q;
+      
+      if (showRead) {
+        // 모든 알림 (읽음/읽지 않음 모두)
+        q = query(
+          notificationsRef,
+          where('targetUserId', '==', userId),
+          orderBy('createdAt', 'desc')
+        );
+      } else {
+        // 읽지 않은 알림만
+        q = query(
+          notificationsRef,
+          where('targetUserId', '==', userId),
+          where('isRead', '==', false),
+          orderBy('createdAt', 'desc')
+        );
+      }
+      
       const querySnapshot = await getDocs(q);
       
       const notifications = [];
