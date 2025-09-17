@@ -3646,7 +3646,7 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 24px 0 24px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--panel-border);
   margin-bottom: 0;
 }
@@ -3694,7 +3694,7 @@ footer {
   padding: 16px 0;
   border-bottom: 1px solid var(--panel-border);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   position: relative;
 }
 
@@ -3710,7 +3710,13 @@ footer {
 }
 
 .notification-item.unread {
-  background-color: rgba(255, 107, 157, 0.05);
+  background-color: rgba(255, 107, 157, 0.08);
+  border-left: 3px solid #ff6b9d;
+  padding-left: 13px;
+}
+
+.notification-item.read {
+  background-color: transparent;
 }
 
 .notification-content {
@@ -3752,15 +3758,6 @@ footer {
   font-size: 12px;
 }
 
-.notification-dot {
-  width: 8px;
-  height: 8px;
-  background: #ff6b9d;
-  border-radius: 50%;
-  position: absolute;
-  top: 16px;
-  right: 0;
-}
 
 .no-notifications {
   text-align: center;

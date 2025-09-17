@@ -36,19 +36,19 @@ class HeaderComponent {
               <a href="members.html" class="nav-link" data-page="members">👥 길드원</a>
               <div class="auth-buttons">
                 <a href="#" class="nav-link login-btn" id="loginBtn" title="로그인">
-                  <i class="fa-solid fa-right-to-bracket" style="color:rgb(0, 0, 0);"></i>
+                  <i class="fa-solid fa-right-to-bracket"></i>
                   <span class="nav-text">로그인</span>
                 </a>
                 <a href="#" class="nav-link notification-btn" id="notificationBtn" title="알림" style="display: none;">
-                  <i class="fa-solid fa-bell" style="color: #ff6b9d;"></i>
+                  <i class="fa-solid fa-bell"></i>
                   <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
                 </a>
                 <a href="mypage.html" class="nav-link mypage-btn" id="mypageBtn" title="마이페이지" style="display: none;">
-                  <i class="fa-solid fa-user" style="color: #4CAF50;"></i>
+                  <i class="fa-solid fa-user"></i>
                   <span class="nav-text">마이페이지</span>
                 </a>
                 <a href="#" class="nav-link logout-btn" id="logoutBtn" title="로그아웃" style="display: none;">
-                  <i class="fa-solid fa-sign-out-alt" style="color: #ff4444;"></i>
+                  <i class="fa-solid fa-sign-out-alt"></i>
                   <span class="nav-text">로그아웃</span>
                 </a>
               </div>
@@ -108,10 +108,6 @@ class HeaderComponent {
           <i class="fa-solid fa-user"></i>
           <span>마이페이지</span>
         </a>
-        <a href="#" class="bottom-nav-link auth-link logout-btn" id="mobileLogoutBtn" title="로그아웃" style="display: none;">
-          <i class="fa-solid fa-sign-out-alt"></i>
-          <span>로그아웃</span>
-        </a>
       </div>
     `;
 
@@ -132,8 +128,6 @@ class HeaderComponent {
     const mypageBtn = document.getElementById('mypageBtn');
     const mobileMypageBtn = document.getElementById('mobileMypageBtn');
     const logoutBtn = document.getElementById('logoutBtn');
-    const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
-
     if (loginBtn) {
       loginBtn.addEventListener('click', (e) => this.handleLoginClick(e));
     }
@@ -152,10 +146,6 @@ class HeaderComponent {
 
     if (logoutBtn) {
       logoutBtn.addEventListener('click', (e) => this.handleLogoutClick(e));
-    }
-
-    if (mobileLogoutBtn) {
-      mobileLogoutBtn.addEventListener('click', (e) => this.handleLogoutClick(e));
     }
 
     this.setupAuthListener();
@@ -329,15 +319,20 @@ class HeaderComponent {
           <span class="notification-time">${timeAgo}</span>
         </div>
       </div>
-      ${!notification.isRead ? '<div class="notification-dot"></div>' : ''}
     `;
     
-    // 알림 클릭 시 해당 포스트로 이동
+    // 알림 클릭 시 해당 포스트로 이동하고 읽음 처리
     element.addEventListener('click', () => {
       if (notification.postId) {
         window.location.href = `picture.html?id=${notification.postId}`;
       }
-      this.markAsRead(notification.id);
+      // 읽지 않은 알림만 읽음 처리
+      if (!notification.isRead) {
+        this.markAsRead(notification.id);
+        // UI에서 즉시 읽음 상태로 변경
+        element.classList.remove('unread');
+        element.classList.add('read');
+      }
     });
     
     return element;
@@ -447,7 +442,6 @@ class HeaderComponent {
     const mypageBtn = document.getElementById('mypageBtn');
     const mobileMypageBtn = document.getElementById('mobileMypageBtn');
     const logoutBtn = document.getElementById('logoutBtn');
-    const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
     const sidebarAuthButtons = document.querySelector('.sidebar-auth-buttons');
     
 
@@ -489,11 +483,6 @@ class HeaderComponent {
       if (logoutBtn) {
         logoutBtn.style.display = 'inline-flex';
         logoutBtn.style.visibility = 'visible';
-      }
-
-      if (mobileLogoutBtn) {
-        mobileLogoutBtn.style.display = 'flex';
-        mobileLogoutBtn.style.visibility = 'visible';
       }
       
       // 사이드바 인증 버튼 컨테이너 표시
@@ -540,11 +529,6 @@ class HeaderComponent {
       if (logoutBtn) {
         logoutBtn.style.display = 'none';
         logoutBtn.style.visibility = 'hidden';
-      }
-
-      if (mobileLogoutBtn) {
-        mobileLogoutBtn.style.display = 'none';
-        mobileLogoutBtn.style.visibility = 'hidden';
       }
       
       // 사이드바 인증 버튼 컨테이너 표시 (로그인 버튼이 있으므로)
