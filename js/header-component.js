@@ -40,9 +40,9 @@ class HeaderComponent {
                   <span class="nav-text">로그인</span>
                 </a>
                 <button type="button" class="relative inline-flex items-center p-2 text-sm font-medium text-center text-gray-700 bg-transparent rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-gray-800 nav-link notification-btn" id="notificationBtn" title="알림" style="display: none;">
-                  <i class="fa-solid fa-bell w-5 h-5"></i>
+                  <i class="fa-solid fa-bell text-lg"></i>
                   <span class="sr-only">알림</span>
-                  <div class="absolute inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full -top-1 -end-1 dark:border-gray-900 notification-badge hidden" id="notificationBadge">0</div>
+                  <div class="absolute inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full -top-1 -end-1 dark:border-gray-900 notification-badge" id="notificationBadge" style="display: none;">0</div>
                 </button>
                 <a href="mypage.html" class="nav-link mypage-btn" id="mypageBtn" title="마이페이지" style="display: none;">
                   <i class="fa-solid fa-user"></i>
@@ -103,7 +103,7 @@ class HeaderComponent {
         <a href="#" class="bottom-nav-link auth-link notification-btn relative" id="mobileNotificationBtn" title="알림" style="display: none;">
           <i class="fa-solid fa-bell"></i>
           <span>알림</span>
-          <div class="absolute inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full top-0 right-0 dark:border-gray-900 notification-badge hidden" id="mobileNotificationBadge">0</div>
+          <div class="absolute inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full top-0 right-0 dark:border-gray-900 notification-badge" id="mobileNotificationBadge" style="display: none;">0</div>
         </a>
         <a href="mypage.html" class="bottom-nav-link auth-link mypage-btn" id="mobileMypageBtn" title="마이페이지" style="display: none;">
           <i class="fa-solid fa-user"></i>
@@ -392,22 +392,18 @@ class HeaderComponent {
       if (badge) {
         if (unreadCount > 0) {
           badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
-          badge.classList.remove('hidden');
-          badge.classList.add('inline-flex');
+          badge.style.display = 'inline-flex';
         } else {
-          badge.classList.add('hidden');
-          badge.classList.remove('inline-flex');
+          badge.style.display = 'none';
         }
       }
       
       if (mobileBadge) {
         if (unreadCount > 0) {
           mobileBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
-          mobileBadge.classList.remove('hidden');
-          mobileBadge.classList.add('inline-flex');
+          mobileBadge.style.display = 'inline-flex';
         } else {
-          mobileBadge.classList.add('hidden');
-          mobileBadge.classList.remove('inline-flex');
+          mobileBadge.style.display = 'none';
         }
       }
     } catch (error) {
